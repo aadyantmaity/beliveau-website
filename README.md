@@ -28,7 +28,7 @@ The Beliveau 3D Visualizer is designed specifically for scientific data explorat
   - Dynamic color scaling based on data ranges
 - **Multi-Scale Dataset Support**:
   - Built-in datasets from 50 to 500,000 observations
-  - Intelligent random sampling for large datasets (75k from 500k)
+  - Intelligent random sampling for large datasets (100k from 500k)
   - Optimized rendering strategies for each dataset size
 - **Scientific Interface**:
   - Professional control panel with dataset information
@@ -75,7 +75,7 @@ npm start
 1. **Select Dataset**: Choose from the available dataset sizes (50 to 500,000 observations)
 2. **Adjust Visualization**:
    - Select color mode (intensity-based or uniform)
-   - The 500k dataset automatically samples 75k random points for optimal performance
+   - The 500k dataset automatically samples 100k random points for optimal performance
 3. **Interact with 3D View**:
    - Mouse drag to rotate the view
    - Mouse scroll to zoom in/out
