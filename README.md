@@ -68,7 +68,7 @@ npm install
 npm start
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+4. Open [http://localhost:1800](http://localhost:1800) to view it in the browser.
 
 ## Usage
 
