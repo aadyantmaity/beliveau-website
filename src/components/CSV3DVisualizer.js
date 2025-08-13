@@ -1,14 +1,18 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import {
-  OrbitControls,
-  Text,
-  Html,
-  Instances,
-  Instance,
-} from "@react-three/drei";
+import { OrbitControls, Instances, Instance } from "@react-three/drei";
 import * as THREE from "three";
 import Papa from "papaparse";
+import {
+  Cube,
+  Palette,
+  Database,
+  Mouse,
+  MagnifyingGlass,
+  CaretDown,
+  ChartLine,
+  Info,
+} from "@phosphor-icons/react";
 
 // Optimized Point component for individual data points (for small datasets)
 function DataPoint({ position, intensity, color, geometryDetail = 8 }) {
@@ -25,7 +29,7 @@ function DataPoint({ position, intensity, color, geometryDetail = 8 }) {
   return (
     <group position={position}>
       <mesh ref={meshRef} scale={1}>
-        <sphereGeometry args={[0.05, geometryDetail, geometryDetail]} />
+        <sphereGeometry args={[0.025, geometryDetail, geometryDetail]} />
         <meshStandardMaterial
           color={color}
           emissive="#000000"
@@ -41,7 +45,7 @@ function InstancedPoints({ data, colorMode, performanceMode }) {
   const instancesRef = useRef();
 
   // Create geometry and material once
-  const geometry = useMemo(() => new THREE.SphereGeometry(0.05, 4, 4), []);
+  const geometry = useMemo(() => new THREE.SphereGeometry(0.025, 2, 2), []);
   const material = useMemo(() => new THREE.MeshStandardMaterial(), []);
 
   // Create colors array for all points - optimized
@@ -53,7 +57,7 @@ function InstancedPoints({ data, colorMode, performanceMode }) {
       if (colorMode === "intensity") {
         color.setHSL(intensity, 0.8, 0.5);
       } else {
-        color.setHSL(0.6, 0.8, 0.5);
+        color.setHSL(0, 0, 0.8); // Gray/white color
       }
       colorsArray[i] = color;
     }
@@ -178,7 +182,7 @@ function CSVVisualization({ data, colorMode, performanceMode }) {
       case "intensity":
         return new THREE.Color().setHSL(intensity, 0.8, 0.5);
       default:
-        return new THREE.Color().setHSL(0.6, 0.8, 0.5);
+        return new THREE.Color().setHSL(0, 0, 0.8); // Gray/white color
     }
   };
 
@@ -217,7 +221,6 @@ function CSV3DVisualizer() {
   const [colorMode, setColorMode] = useState("intensity");
   const [loading, setLoading] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [fileInput, setFileInput] = useState(null);
   const [activeTab, setActiveTab] = useState("sampled_50");
   const [performanceMode, setPerformanceMode] = useState("auto");
 
@@ -261,6 +264,14 @@ function CSV3DVisualizer() {
     setDataLoaded(false);
   };
 
+  // Function to randomly sample data points
+  const sampleData = (data, sampleSize) => {
+    if (data.length <= sampleSize) return data;
+
+    const shuffled = [...data].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, sampleSize);
+  };
+
   const loadSampleData = async () => {
     try {
       setLoading(true);
@@ -280,8 +291,10 @@ function CSV3DVisualizer() {
         }))
         .filter((row) => !isNaN(row.centroid_x));
 
-      // For 50,000 observations tab, render all points (optimized)
-      // No sampling needed - we'll use instanced rendering for performance
+      // For 500,000 observations, randomly sample 75,000 points
+      if (activeTab === "sampled_500000") {
+        parsedData = sampleData(parsedData, 75000);
+      }
 
       setData(parsedData);
       setDataLoaded(true);
@@ -291,33 +304,6 @@ function CSV3DVisualizer() {
       console.error("Error loading sample data:", error);
       setDataLoaded(true);
       setTimeout(() => setLoading(false), 200);
-    }
-  };
-
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const csvText = e.target.result;
-        const result = Papa.parse(csvText, { header: true });
-
-        const parsedData = result.data
-          .map((row) => ({
-            centroid_x: parseFloat(row.centroid_x),
-            centroid_y: parseFloat(row.centroid_y),
-            centroid_z: parseFloat(row.centroid_z),
-            mean_intensity_0: parseFloat(row["mean_intensity-0"]),
-            mean_intensity_1: parseFloat(row["mean_intensity-1"]),
-            mean_intensity_2: parseFloat(row["mean_intensity-2"]),
-          }))
-          .filter((row) => !isNaN(row.centroid_x));
-
-        setData(parsedData);
-        setDataLoaded(true);
-        setTimeout(() => setLoading(false), 200);
-      };
-      reader.readAsText(file);
     }
   };
 
@@ -335,8 +321,8 @@ function CSV3DVisualizer() {
         <div
           style={{
             position: "relative",
-            width: "60px",
-            height: "60px",
+            width: "40px",
+            height: "40px",
           }}
         >
           <div
@@ -344,8 +330,8 @@ function CSV3DVisualizer() {
               position: "absolute",
               width: "100%",
               height: "100%",
-              border: "3px solid rgba(255, 255, 255, 0.1)",
-              borderTop: "3px solid #007bff",
+              border: "2px solid rgba(255, 255, 255, 0.1)",
+              borderTop: "2px solid #fff",
               borderRadius: "50%",
               animation: "spin 1s linear infinite",
             }}
@@ -367,66 +353,178 @@ function CSV3DVisualizer() {
       <div
         style={{
           position: "absolute",
-          top: "20px",
-          left: "20px",
+          top: "24px",
+          left: "24px",
           zIndex: 1000,
-          background: "rgba(0, 0, 0, 0.8)",
+          background: "rgba(0, 0, 0, 0.85)",
+          backdropFilter: "blur(10px)",
           color: "white",
-          padding: "20px",
-          borderRadius: "8px",
-          minWidth: "250px",
+          padding: "24px",
+          borderRadius: "12px",
+          minWidth: "280px",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
         }}
       >
-        <h3 style={{ margin: "0 0 15px 0" }}>Beliveau 3D Visualizer</h3>
-
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            Color Mode:
-          </label>
-          <select
-            value={colorMode}
-            onChange={(e) => setColorMode(e.target.value)}
-            style={{ width: "100%", padding: "5px" }}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            marginBottom: "20px",
+          }}
+        >
+          <Cube size={20} weight="fill" />
+          <h3
+            style={{
+              margin: "0",
+              fontSize: "18px",
+              fontWeight: "500",
+              letterSpacing: "0.5px",
+            }}
           >
-            <option value="intensity">Intensity-based</option>
-            <option value="uniform">Uniform</option>
-          </select>
+            Beliveau 3D Visualizer
+          </h3>
         </div>
 
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            Upload CSV:
+        <div style={{ marginBottom: "20px" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              marginBottom: "8px",
+              fontSize: "13px",
+              fontWeight: "500",
+              opacity: "0.9",
+            }}
+          >
+            <Palette size={14} />
+            Color Mode
           </label>
-          <input
-            type="file"
-            accept=".csv"
-            onChange={handleFileUpload}
-            style={{ width: "100%" }}
-          />
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            <button
+              onClick={() => setColorMode("intensity")}
+              style={{
+                padding: "10px 12px",
+                background:
+                  colorMode === "intensity"
+                    ? "rgba(255, 255, 255, 0.15)"
+                    : "rgba(255, 255, 255, 0.03)",
+                color: "white",
+                border:
+                  colorMode === "intensity"
+                    ? "1px solid rgba(255, 255, 255, 0.2)"
+                    : "1px solid rgba(255, 255, 255, 0.05)",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontSize: "13px",
+                textAlign: "left",
+                transition: "all 0.2s ease",
+                fontWeight: colorMode === "intensity" ? "500" : "400",
+              }}
+              onMouseEnter={(e) => {
+                if (colorMode !== "intensity") {
+                  e.target.style.background = "rgba(255, 255, 255, 0.08)";
+                  e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (colorMode !== "intensity") {
+                  e.target.style.background = "rgba(255, 255, 255, 0.03)";
+                  e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
+                }
+              }}
+            >
+              Intensity-based
+            </button>
+            <button
+              onClick={() => setColorMode("uniform")}
+              style={{
+                padding: "10px 12px",
+                background:
+                  colorMode === "uniform"
+                    ? "rgba(255, 255, 255, 0.15)"
+                    : "rgba(255, 255, 255, 0.03)",
+                color: "white",
+                border:
+                  colorMode === "uniform"
+                    ? "1px solid rgba(255, 255, 255, 0.2)"
+                    : "1px solid rgba(255, 255, 255, 0.05)",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontSize: "13px",
+                textAlign: "left",
+                transition: "all 0.2s ease",
+                fontWeight: colorMode === "uniform" ? "500" : "400",
+              }}
+              onMouseEnter={(e) => {
+                if (colorMode !== "uniform") {
+                  e.target.style.background = "rgba(255, 255, 255, 0.08)";
+                  e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (colorMode !== "uniform") {
+                  e.target.style.background = "rgba(255, 255, 255, 0.03)";
+                  e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
+                }
+              }}
+            >
+              Uniform
+            </button>
+          </div>
         </div>
 
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            Dataset:
+        <div style={{ marginBottom: "20px" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              marginBottom: "8px",
+              fontSize: "13px",
+              fontWeight: "500",
+              opacity: "0.9",
+            }}
+          >
+            <Database size={14} />
+            Dataset
           </label>
-          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
             {csvFiles.map((file) => (
               <button
                 key={file.id}
                 onClick={() => handleTabChange(file.id)}
                 style={{
-                  padding: "6px 8px",
+                  padding: "10px 12px",
                   background:
                     activeTab === file.id
-                      ? "#007bff"
-                      : "rgba(255, 255, 255, 0.1)",
+                      ? "rgba(255, 255, 255, 0.15)"
+                      : "rgba(255, 255, 255, 0.03)",
                   color: "white",
-                  border: "none",
-                  borderRadius: "4px",
+                  border:
+                    activeTab === file.id
+                      ? "1px solid rgba(255, 255, 255, 0.2)"
+                      : "1px solid rgba(255, 255, 255, 0.05)",
+                  borderRadius: "8px",
                   cursor: "pointer",
-                  fontSize: "12px",
+                  fontSize: "13px",
                   textAlign: "left",
-                  transition: "background 0.2s",
+                  transition: "all 0.2s ease",
+                  fontWeight: activeTab === file.id ? "500" : "400",
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== file.id) {
+                    e.target.style.background = "rgba(255, 255, 255, 0.08)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== file.id) {
+                    e.target.style.background = "rgba(255, 255, 255, 0.03)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
+                  }
                 }}
               >
                 {file.name}
@@ -437,38 +535,86 @@ function CSV3DVisualizer() {
 
         <div
           style={{
-            background: "rgba(255, 255, 255, 0.1)",
-            padding: "10px",
-            borderRadius: "4px",
-            marginTop: "10px",
+            background: "rgba(255, 255, 255, 0.03)",
+            padding: "16px",
+            borderRadius: "8px",
+            marginTop: "16px",
+            border: "1px solid rgba(255, 255, 255, 0.05)",
           }}
         >
-          <strong>Current Dataset:</strong>
-          <br />
-          {csvFiles.find((file) => file.id === activeTab)?.name}
-          <br />
-          <strong>Points:</strong> {data.length.toLocaleString()}
-          {data.length > 10000 && (
-            <>
-              <br />
-              <strong style={{ color: "#00ff00" }}>
-                Performance Mode:
-              </strong>{" "}
-              Instanced Rendering
-              <br />
-              <small style={{ opacity: 0.7 }}>
-                Showing all {data.length.toLocaleString()} points with optimized
-                rendering
-              </small>
-            </>
-          )}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "13px",
+              marginBottom: "8px",
+              opacity: "0.8",
+            }}
+          >
+            <ChartLine size={14} />
+            Current Dataset
+          </div>
+          <div
+            style={{ fontSize: "14px", fontWeight: "500", marginBottom: "4px" }}
+          >
+            {csvFiles.find((file) => file.id === activeTab)?.name}
+            {activeTab === "sampled_500000" && (
+              <span
+                style={{ fontSize: "12px", opacity: "0.6", fontWeight: "400" }}
+              >
+                {" "}
+                (75k random sample)
+              </span>
+            )}
+          </div>
+          <div style={{ fontSize: "13px", opacity: "0.7" }}>
+            <strong>{data.length.toLocaleString()}</strong> points
+          </div>
         </div>
 
-        <div style={{ fontSize: "12px", marginTop: "15px", opacity: 0.7 }}>
-          <strong>Controls:</strong>
-          <br />
-          • Mouse: Rotate view
-          <br />• Scroll: Zoom
+        <div
+          style={{
+            fontSize: "12px",
+            marginTop: "16px",
+            opacity: "0.6",
+            padding: "12px",
+            background: "rgba(255, 255, 255, 0.02)",
+            borderRadius: "6px",
+            border: "1px solid rgba(255, 255, 255, 0.03)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              fontWeight: "500",
+              marginBottom: "8px",
+            }}
+          >
+            <Mouse size={14} />
+            Controls
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              marginBottom: "2px",
+            }}
+          >
+            Mouse: Rotate view
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            Scroll: Zoom
+          </div>
         </div>
       </div>
 
@@ -493,9 +639,6 @@ function CSV3DVisualizer() {
           enableRotate={true}
           dampingFactor={0.05}
         />
-
-        {/* Grid for reference */}
-        <gridHelper args={[20, 20, "#444444", "#222222"]} />
 
         {/* Axes */}
         <axesHelper args={[5]} />

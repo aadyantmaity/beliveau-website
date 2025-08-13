@@ -1,27 +1,47 @@
-# Beliveau Website - 3D CSV Visualizer
+# Beliveau 3D Visualizer
 
-A React-based web application for visualizing CSV data in 3D space with interactive features. This project allows users to upload and explore CSV data containing spatial coordinates and intensity values in an immersive 3D environment.
+An advanced React-based web application for interactive 3D visualization of large-scale scientific datasets. This tool enables researchers and data scientists to explore CSV data containing spatial coordinates and intensity values in an immersive 3D environment with real-time rendering capabilities.
+
+## Overview
+
+The Beliveau 3D Visualizer is designed specifically for scientific data exploration, featuring:
+
+- **High-performance rendering** for datasets up to 500,000+ points
+- **Interactive 3D visualization** using Three.js and React Three Fiber
+- **Multiple dataset sizes** from 50 to 500,000 observations
+- **Intelligent sampling** for optimal performance on large datasets
+- **Professional scientific interface** with data analysis tools
 
 ## Features
 
-- **3D Visualization**: Plot CSV data points in 3D space using Three.js
-- **Interactive Controls**: 
-  - Mouse rotation and zoom
-  - Point hovering for detailed information
-  - Point selection and highlighting
-- **Multiple Color Modes**: 
-  - Intensity-based coloring
-  - Position-based coloring
-  - Uniform coloring
-- **File Upload**: Upload your own CSV files
-- **Sample Data**: Built-in sample dataset for testing
-- **Responsive Design**: Full-screen immersive experience
+- **High-Performance 3D Visualization**:
+  - Plot CSV data points in 3D space using Three.js
+  - Instanced rendering for large datasets (500,000+ points)
+  - Optimized performance with intelligent geometry detail adjustment
+- **Interactive Controls**:
+  - Mouse rotation and zoom with smooth damping
+  - Real-time point information display
+  - Professional camera controls
+- **Advanced Color Modes**:
+  - Intensity-based coloring with HSL color mapping
+  - Uniform coloring for consistent visualization
+  - Dynamic color scaling based on data ranges
+- **Multi-Scale Dataset Support**:
+  - Built-in datasets from 50 to 500,000 observations
+  - Intelligent random sampling for large datasets (75k from 500k)
+  - Optimized rendering strategies for each dataset size
+- **Scientific Interface**:
+  - Professional control panel with dataset information
+  - Real-time point count display
+  - Performance mode selection
+- **Responsive Design**: Full-screen immersive experience optimized for scientific workflows
 
 ## Data Format
 
 The application expects CSV files with the following columns:
+
 - `centroid_x`: X-coordinate of data points
-- `centroid_y`: Y-coordinate of data points  
+- `centroid_y`: Y-coordinate of data points
 - `centroid_z`: Z-coordinate of data points
 - `mean_intensity-0`: First intensity value
 - `mean_intensity-1`: Second intensity value
@@ -30,17 +50,20 @@ The application expects CSV files with the following columns:
 ## Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd beliveau-website
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Start the development server:
+
 ```bash
 npm start
 ```
@@ -49,13 +72,15 @@ npm start
 
 ## Usage
 
-1. **Load Sample Data**: Click "Load Sample Data" to visualize the included sample dataset
-2. **Upload Your Data**: Use the file upload button to load your own CSV file
-3. **Change Color Mode**: Select different coloring schemes from the dropdown
-4. **Interact with Points**: 
-   - Hover over points to see intensity values
-   - Click points to select them and view detailed information
-   - Use mouse to rotate and zoom the view
+1. **Select Dataset**: Choose from the available dataset sizes (50 to 500,000 observations)
+2. **Adjust Visualization**:
+   - Select color mode (intensity-based or uniform)
+   - The 500k dataset automatically samples 75k random points for optimal performance
+3. **Interact with 3D View**:
+   - Mouse drag to rotate the view
+   - Mouse scroll to zoom in/out
+   - Real-time point count display in the control panel
+4. **Performance Optimization**: The system automatically adjusts rendering quality based on dataset size
 
 ## Controls
 
@@ -66,11 +91,12 @@ npm start
 
 ## Technologies Used
 
-- **React**: Frontend framework
-- **Three.js**: 3D graphics library
-- **React Three Fiber**: React renderer for Three.js
-- **React Three Drei**: Useful helpers for React Three Fiber
-- **PapaParse**: CSV parsing library
+- **React 19**: Modern frontend framework with hooks
+- **Three.js**: Advanced 3D graphics library
+- **React Three Fiber**: React renderer for Three.js with optimized performance
+- **React Three Drei**: Professional helpers and utilities for React Three Fiber
+- **PapaParse**: High-performance CSV parsing library
+- **Modern JavaScript**: ES6+ features for optimal performance
 
 ## Project Structure
 
