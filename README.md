@@ -1,70 +1,107 @@
-# Getting Started with Create React App
+# Beliveau Website - 3D CSV Visualizer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A React-based web application for visualizing CSV data in 3D space with interactive features. This project allows users to upload and explore CSV data containing spatial coordinates and intensity values in an immersive 3D environment.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **3D Visualization**: Plot CSV data points in 3D space using Three.js
+- **Interactive Controls**: 
+  - Mouse rotation and zoom
+  - Point hovering for detailed information
+  - Point selection and highlighting
+- **Multiple Color Modes**: 
+  - Intensity-based coloring
+  - Position-based coloring
+  - Uniform coloring
+- **File Upload**: Upload your own CSV files
+- **Sample Data**: Built-in sample dataset for testing
+- **Responsive Design**: Full-screen immersive experience
 
-### `npm start`
+## Data Format
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+The application expects CSV files with the following columns:
+- `centroid_x`: X-coordinate of data points
+- `centroid_y`: Y-coordinate of data points  
+- `centroid_z`: Z-coordinate of data points
+- `mean_intensity-0`: First intensity value
+- `mean_intensity-1`: Second intensity value
+- `mean_intensity-2`: Third intensity value (used for coloring)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Installation
 
-### `npm test`
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd beliveau-website
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. Install dependencies:
+```bash
+npm install
+```
 
-### `npm run build`
+3. Start the development server:
+```bash
+npm start
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+4. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Usage
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. **Load Sample Data**: Click "Load Sample Data" to visualize the included sample dataset
+2. **Upload Your Data**: Use the file upload button to load your own CSV file
+3. **Change Color Mode**: Select different coloring schemes from the dropdown
+4. **Interact with Points**: 
+   - Hover over points to see intensity values
+   - Click points to select them and view detailed information
+   - Use mouse to rotate and zoom the view
 
-### `npm run eject`
+## Controls
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- **Mouse Drag**: Rotate the 3D view
+- **Mouse Scroll**: Zoom in/out
+- **Hover**: Show point information
+- **Click**: Select points for detailed view
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Technologies Used
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- **React**: Frontend framework
+- **Three.js**: 3D graphics library
+- **React Three Fiber**: React renderer for Three.js
+- **React Three Drei**: Useful helpers for React Three Fiber
+- **PapaParse**: CSV parsing library
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Project Structure
 
-## Learn More
+```
+src/
+├── components/
+│   └── CSV3DVisualizer.js    # Main 3D visualization component
+├── App.js                    # Main app component
+├── App.css                   # App styles
+└── index.css                 # Global styles
+public/
+└── sample_data.csv          # Sample dataset
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Building for Production
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+npm run build
+```
 
-### Code Splitting
+This creates an optimized production build in the `build` folder.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Customization
 
-### Analyzing the Bundle Size
+You can customize the visualization by modifying the `CSV3DVisualizer.js` component:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- Change point sizes and shapes
+- Modify color schemes
+- Add additional interactive features
+- Adjust lighting and camera settings
 
-### Making a Progressive Web App
+## License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project is open source and available under the MIT License.
