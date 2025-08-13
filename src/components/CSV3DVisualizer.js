@@ -17,6 +17,8 @@ import {
   MagnifyingGlass,
   ChartLine,
   Question,
+  CaretLeft,
+  CaretRight,
 } from "@phosphor-icons/react";
 
 // Optimized Point component for individual data points (for small datasets)
@@ -255,6 +257,7 @@ function CSV3DVisualizer() {
   const [activeTab, setActiveTab] = useState("sampled_50");
   const [performanceMode] = useState("auto");
   const [intensityFilter, setIntensityFilter] = useState("all");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [tooltipInfo, setTooltipInfo] = useState({
     show: false,
     text: "",
@@ -478,482 +481,125 @@ function CSV3DVisualizer() {
           top: "24px",
           left: "24px",
           zIndex: 1000,
-          background: "rgba(0, 0, 0, 0.85)",
+          background: "rgba(0, 0, 0, 0.95)",
           backdropFilter: "blur(10px)",
           color: "white",
-          padding: "24px",
+          padding: sidebarCollapsed ? "12px" : "24px",
           borderRadius: "12px",
-          minWidth: "280px",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+          width: sidebarCollapsed ? "60px" : "280px",
+          height: sidebarCollapsed ? "60px" : "auto",
+          border: "1px solid #333333",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+          transition: "all 0.3s ease",
+          overflow: "hidden",
         }}
       >
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "8px",
-            marginBottom: "20px",
+            justifyContent: sidebarCollapsed ? "center" : "space-between",
+            marginBottom: sidebarCollapsed ? "0" : "20px",
           }}
         >
-          <Cube size={20} weight="fill" />
-          <h3
+          {!sidebarCollapsed && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                transition: "opacity 0.3s ease",
+              }}
+            >
+              <h3
+                style={{
+                  margin: "0",
+                  fontSize: "18px",
+                  fontWeight: "500",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                Filters
+              </h3>
+            </div>
+          )}
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             style={{
-              margin: "0",
-              fontSize: "18px",
-              fontWeight: "500",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Beliveau 3D Visualizer
-          </h3>
-        </div>
-
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            style={{
+              background: "none",
+              border: "none",
+              color: "white",
+              cursor: "pointer",
+              padding: "8px",
+              borderRadius: "6px",
               display: "flex",
               alignItems: "center",
-              gap: "6px",
-              marginBottom: "8px",
-              fontSize: "13px",
-              fontWeight: "500",
-              opacity: "0.9",
+              justifyContent: "center",
+              transition: "background-color 0.2s ease",
+              minWidth: "32px",
+              minHeight: "32px",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = "transparent";
             }}
           >
-            <Palette size={14} />
-            Color Mode
-            <Question
-              size={12}
-              style={{ cursor: "pointer", opacity: "0.6" }}
-              onMouseEnter={(e) =>
-                showTooltip(
-                  "Choose how data points are colored. Intensity-based uses the selected channel's values to create a color gradient, while Uniform gives all points the same color.",
-                  e
-                )
-              }
-              onMouseLeave={hideTooltip}
-            />
-          </label>
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <button
-              onClick={() => setColorMode("intensity")}
-              style={{
-                padding: "10px 12px",
-                background:
-                  colorMode === "intensity"
-                    ? "rgba(255, 255, 255, 0.15)"
-                    : "rgba(255, 255, 255, 0.03)",
-                color: "white",
-                border:
-                  colorMode === "intensity"
-                    ? "1px solid rgba(255, 255, 255, 0.2)"
-                    : "1px solid rgba(255, 255, 255, 0.05)",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "13px",
-                textAlign: "left",
-                transition: "all 0.2s ease",
-                fontWeight: colorMode === "intensity" ? "500" : "400",
-              }}
-              onMouseEnter={(e) => {
-                if (colorMode !== "intensity") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.08)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (colorMode !== "intensity") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.03)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
-                }
-              }}
-            >
-              Intensity-based
-            </button>
-            <button
-              onClick={() => setColorMode("uniform")}
-              style={{
-                padding: "10px 12px",
-                background:
-                  colorMode === "uniform"
-                    ? "rgba(255, 255, 255, 0.15)"
-                    : "rgba(255, 255, 255, 0.03)",
-                color: "white",
-                border:
-                  colorMode === "uniform"
-                    ? "1px solid rgba(255, 255, 255, 0.2)"
-                    : "1px solid rgba(255, 255, 255, 0.05)",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "13px",
-                textAlign: "left",
-                transition: "all 0.2s ease",
-                fontWeight: colorMode === "uniform" ? "500" : "400",
-              }}
-              onMouseEnter={(e) => {
-                if (colorMode !== "uniform") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.08)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (colorMode !== "uniform") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.03)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
-                }
-              }}
-            >
-              Uniform
-            </button>
-          </div>
+            {sidebarCollapsed ? (
+              <CaretRight size={20} />
+            ) : (
+              <CaretLeft size={20} />
+            )}
+          </button>
         </div>
 
-        <div style={{ marginBottom: "20px" }}>
-          <label
+        {!sidebarCollapsed && (
+          <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              marginBottom: "8px",
-              fontSize: "13px",
-              fontWeight: "500",
-              opacity: "0.9",
+              marginBottom: "20px",
+              transition: "opacity 0.3s ease",
             }}
           >
-            <ChartLine size={14} />
-            Intensity Channel
-            <Question
-              size={12}
-              style={{ cursor: "pointer", opacity: "0.6" }}
-              onMouseEnter={(e) =>
-                showTooltip(
-                  "Select which intensity measurement to use for coloring and filtering. Each channel represents different measurements from the dataset (mean_intensity-0, mean_intensity-1, or mean_intensity-2).",
-                  e
-                )
-              }
-              onMouseLeave={hideTooltip}
-            />
-          </label>
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <button
-              onClick={() => setIntensityChannel("channel_0")}
+            <label
               style={{
-                padding: "10px 12px",
-                background:
-                  intensityChannel === "channel_0"
-                    ? "rgba(255, 255, 255, 0.15)"
-                    : "rgba(255, 255, 255, 0.03)",
-                color: "white",
-                border:
-                  intensityChannel === "channel_0"
-                    ? "1px solid rgba(255, 255, 255, 0.2)"
-                    : "1px solid rgba(255, 255, 255, 0.05)",
-                borderRadius: "8px",
-                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                marginBottom: "8px",
                 fontSize: "13px",
-                textAlign: "left",
-                transition: "all 0.2s ease",
-                fontWeight: intensityChannel === "channel_0" ? "500" : "400",
-              }}
-              onMouseEnter={(e) => {
-                if (intensityChannel !== "channel_0") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.08)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (intensityChannel !== "channel_0") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.03)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
-                }
+                fontWeight: "500",
+                opacity: "0.9",
               }}
             >
-              Channel 0 (mean_intensity-0)
-            </button>
-            <button
-              onClick={() => setIntensityChannel("channel_1")}
-              style={{
-                padding: "10px 12px",
-                background:
-                  intensityChannel === "channel_1"
-                    ? "rgba(255, 255, 255, 0.15)"
-                    : "rgba(255, 255, 255, 0.03)",
-                color: "white",
-                border:
-                  intensityChannel === "channel_1"
-                    ? "1px solid rgba(255, 255, 255, 0.2)"
-                    : "1px solid rgba(255, 255, 255, 0.05)",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "13px",
-                textAlign: "left",
-                transition: "all 0.2s ease",
-                fontWeight: intensityChannel === "channel_1" ? "500" : "400",
-              }}
-              onMouseEnter={(e) => {
-                if (intensityChannel !== "channel_1") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.08)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
+              <Palette size={14} />
+              Color Mode
+              <Question
+                size={12}
+                style={{ cursor: "pointer", opacity: "0.6" }}
+                onMouseEnter={(e) =>
+                  showTooltip(
+                    "Choose how data points are colored. Intensity-based uses the selected channel's values to create a color gradient, while Uniform gives all points the same color.",
+                    e
+                  )
                 }
-              }}
-              onMouseLeave={(e) => {
-                if (intensityChannel !== "channel_1") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.03)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
-                }
-              }}
+                onMouseLeave={hideTooltip}
+              />
+            </label>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "4px" }}
             >
-              Channel 1 (mean_intensity-1)
-            </button>
-            <button
-              onClick={() => setIntensityChannel("channel_2")}
-              style={{
-                padding: "10px 12px",
-                background:
-                  intensityChannel === "channel_2"
-                    ? "rgba(255, 255, 255, 0.15)"
-                    : "rgba(255, 255, 255, 0.03)",
-                color: "white",
-                border:
-                  intensityChannel === "channel_2"
-                    ? "1px solid rgba(255, 255, 255, 0.2)"
-                    : "1px solid rgba(255, 255, 255, 0.05)",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "13px",
-                textAlign: "left",
-                transition: "all 0.2s ease",
-                fontWeight: intensityChannel === "channel_2" ? "500" : "400",
-              }}
-              onMouseEnter={(e) => {
-                if (intensityChannel !== "channel_2") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.08)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (intensityChannel !== "channel_2") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.03)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
-                }
-              }}
-            >
-              Channel 2 (mean_intensity-2)
-            </button>
-          </div>
-        </div>
-
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              marginBottom: "8px",
-              fontSize: "13px",
-              fontWeight: "500",
-              opacity: "0.9",
-            }}
-          >
-            <MagnifyingGlass size={14} />
-            Intensity Filter
-            <Question
-              size={12}
-              style={{ cursor: "pointer", opacity: "0.6" }}
-              onMouseEnter={(e) =>
-                showTooltip(
-                  "Filter data points based on their intensity values. Low shows the bottom 33%, Medium shows the middle 33%, and High shows the top 33% of intensity values from the selected channel.",
-                  e
-                )
-              }
-              onMouseLeave={hideTooltip}
-            />
-          </label>
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <button
-              onClick={() => setIntensityFilter("all")}
-              style={{
-                padding: "10px 12px",
-                background:
-                  intensityFilter === "all"
-                    ? "rgba(255, 255, 255, 0.15)"
-                    : "rgba(255, 255, 255, 0.03)",
-                color: "white",
-                border:
-                  intensityFilter === "all"
-                    ? "1px solid rgba(255, 255, 255, 0.2)"
-                    : "1px solid rgba(255, 255, 255, 0.05)",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "13px",
-                textAlign: "left",
-                transition: "all 0.2s ease",
-                fontWeight: intensityFilter === "all" ? "500" : "400",
-              }}
-              onMouseEnter={(e) => {
-                if (intensityFilter !== "all") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.08)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (intensityFilter !== "all") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.03)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
-                }
-              }}
-            >
-              All Intensities
-            </button>
-            <button
-              onClick={() => setIntensityFilter("low")}
-              style={{
-                padding: "10px 12px",
-                background:
-                  intensityFilter === "low"
-                    ? "rgba(255, 255, 255, 0.15)"
-                    : "rgba(255, 255, 255, 0.03)",
-                color: "white",
-                border:
-                  intensityFilter === "low"
-                    ? "1px solid rgba(255, 255, 255, 0.2)"
-                    : "1px solid rgba(255, 255, 255, 0.05)",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "13px",
-                textAlign: "left",
-                transition: "all 0.2s ease",
-                fontWeight: intensityFilter === "low" ? "500" : "400",
-              }}
-              onMouseEnter={(e) => {
-                if (intensityFilter !== "low") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.08)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (intensityFilter !== "low") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.03)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
-                }
-              }}
-            >
-              Low Intensity
-            </button>
-            <button
-              onClick={() => setIntensityFilter("medium")}
-              style={{
-                padding: "10px 12px",
-                background:
-                  intensityFilter === "medium"
-                    ? "rgba(255, 255, 255, 0.15)"
-                    : "rgba(255, 255, 255, 0.03)",
-                color: "white",
-                border:
-                  intensityFilter === "medium"
-                    ? "1px solid rgba(255, 255, 255, 0.2)"
-                    : "1px solid rgba(255, 255, 255, 0.05)",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "13px",
-                textAlign: "left",
-                transition: "all 0.2s ease",
-                fontWeight: intensityFilter === "medium" ? "500" : "400",
-              }}
-              onMouseEnter={(e) => {
-                if (intensityFilter !== "medium") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.08)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (intensityFilter !== "medium") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.03)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
-                }
-              }}
-            >
-              Medium Intensity
-            </button>
-            <button
-              onClick={() => setIntensityFilter("high")}
-              style={{
-                padding: "10px 12px",
-                background:
-                  intensityFilter === "high"
-                    ? "rgba(255, 255, 255, 0.15)"
-                    : "rgba(255, 255, 255, 0.03)",
-                color: "white",
-                border:
-                  intensityFilter === "high"
-                    ? "1px solid rgba(255, 255, 255, 0.2)"
-                    : "1px solid rgba(255, 255, 255, 0.05)",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "13px",
-                textAlign: "left",
-                transition: "all 0.2s ease",
-                fontWeight: intensityFilter === "high" ? "500" : "400",
-              }}
-              onMouseEnter={(e) => {
-                if (intensityFilter !== "high") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.08)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (intensityFilter !== "high") {
-                  e.target.style.background = "rgba(255, 255, 255, 0.03)";
-                  e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
-                }
-              }}
-            >
-              High Intensity
-            </button>
-          </div>
-        </div>
-
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              marginBottom: "8px",
-              fontSize: "13px",
-              fontWeight: "500",
-              opacity: "0.9",
-            }}
-          >
-            <Database size={14} />
-            Dataset
-            <Question
-              size={12}
-              style={{ cursor: "pointer", opacity: "0.6" }}
-              onMouseEnter={(e) =>
-                showTooltip(
-                  "Select different dataset sizes to explore. Larger datasets show more data points but may require more processing time. The 500k dataset automatically samples 100k points for optimal performance.",
-                  e
-                )
-              }
-              onMouseLeave={hideTooltip}
-            />
-          </label>
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            {csvFiles.map((file) => (
               <button
-                key={file.id}
-                onClick={() => handleTabChange(file.id)}
+                onClick={() => setColorMode("intensity")}
                 style={{
                   padding: "10px 12px",
                   background:
-                    activeTab === file.id
+                    colorMode === "intensity"
                       ? "rgba(255, 255, 255, 0.15)"
                       : "rgba(255, 255, 255, 0.03)",
                   color: "white",
                   border:
-                    activeTab === file.id
+                    colorMode === "intensity"
                       ? "1px solid rgba(255, 255, 255, 0.2)"
                       : "1px solid rgba(255, 255, 255, 0.05)",
                   borderRadius: "8px",
@@ -961,119 +607,563 @@ function CSV3DVisualizer() {
                   fontSize: "13px",
                   textAlign: "left",
                   transition: "all 0.2s ease",
-                  fontWeight: activeTab === file.id ? "500" : "400",
+                  fontWeight: colorMode === "intensity" ? "500" : "400",
                 }}
                 onMouseEnter={(e) => {
-                  if (activeTab !== file.id) {
+                  if (colorMode !== "intensity") {
                     e.target.style.background = "rgba(255, 255, 255, 0.08)";
                     e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (activeTab !== file.id) {
+                  if (colorMode !== "intensity") {
                     e.target.style.background = "rgba(255, 255, 255, 0.03)";
                     e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
                   }
                 }}
               >
-                {file.name}
+                Intensity-based
               </button>
-            ))}
+              <button
+                onClick={() => setColorMode("uniform")}
+                style={{
+                  padding: "10px 12px",
+                  background:
+                    colorMode === "uniform"
+                      ? "rgba(255, 255, 255, 0.15)"
+                      : "rgba(255, 255, 255, 0.03)",
+                  color: "white",
+                  border:
+                    colorMode === "uniform"
+                      ? "1px solid rgba(255, 255, 255, 0.2)"
+                      : "1px solid rgba(255, 255, 255, 0.05)",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  textAlign: "left",
+                  transition: "all 0.2s ease",
+                  fontWeight: colorMode === "uniform" ? "500" : "400",
+                }}
+                onMouseEnter={(e) => {
+                  if (colorMode !== "uniform") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.08)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (colorMode !== "uniform") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.03)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
+                  }
+                }}
+              >
+                Uniform
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
-        <div
-          style={{
-            background: "rgba(255, 255, 255, 0.03)",
-            padding: "16px",
-            borderRadius: "8px",
-            marginTop: "16px",
-            border: "1px solid rgba(255, 255, 255, 0.05)",
-          }}
-        >
+        {!sidebarCollapsed && (
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "13px",
-              marginBottom: "8px",
-              opacity: "0.8",
+              marginBottom: "20px",
+              transition: "opacity 0.3s ease",
             }}
           >
-            <ChartLine size={14} />
-            Current Dataset
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                marginBottom: "8px",
+                fontSize: "13px",
+                fontWeight: "500",
+                opacity: "0.9",
+              }}
+            >
+              <ChartLine size={14} />
+              Intensity Channel
+              <Question
+                size={12}
+                style={{ cursor: "pointer", opacity: "0.6" }}
+                onMouseEnter={(e) =>
+                  showTooltip(
+                    "Select which intensity measurement to use for coloring and filtering. Each channel represents different measurements from the dataset (mean_intensity_0, mean_intensity_1, or mean_intensity_2).",
+                    e
+                  )
+                }
+                onMouseLeave={hideTooltip}
+              />
+            </label>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "4px" }}
+            >
+              <button
+                onClick={() => setIntensityChannel("channel_0")}
+                style={{
+                  padding: "10px 12px",
+                  background:
+                    intensityChannel === "channel_0"
+                      ? "rgba(255, 255, 255, 0.15)"
+                      : "rgba(255, 255, 255, 0.03)",
+                  color: "white",
+                  border:
+                    intensityChannel === "channel_0"
+                      ? "1px solid rgba(255, 255, 255, 0.2)"
+                      : "1px solid rgba(255, 255, 255, 0.05)",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  textAlign: "left",
+                  transition: "all 0.2s ease",
+                  fontWeight: intensityChannel === "channel_0" ? "500" : "400",
+                }}
+                onMouseEnter={(e) => {
+                  if (intensityChannel !== "channel_0") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.08)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (intensityChannel !== "channel_0") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.03)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
+                  }
+                }}
+              >
+                Channel 0 (mean_intensity_0)
+              </button>
+              <button
+                onClick={() => setIntensityChannel("channel_1")}
+                style={{
+                  padding: "10px 12px",
+                  background:
+                    intensityChannel === "channel_1"
+                      ? "rgba(255, 255, 255, 0.15)"
+                      : "rgba(255, 255, 255, 0.03)",
+                  color: "white",
+                  border:
+                    intensityChannel === "channel_1"
+                      ? "1px solid rgba(255, 255, 255, 0.2)"
+                      : "1px solid rgba(255, 255, 255, 0.05)",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  textAlign: "left",
+                  transition: "all 0.2s ease",
+                  fontWeight: intensityChannel === "channel_1" ? "500" : "400",
+                }}
+                onMouseEnter={(e) => {
+                  if (intensityChannel !== "channel_1") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.08)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (intensityChannel !== "channel_1") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.03)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
+                  }
+                }}
+              >
+                Channel 1 (mean_intensity_1)
+              </button>
+              <button
+                onClick={() => setIntensityChannel("channel_2")}
+                style={{
+                  padding: "10px 12px",
+                  background:
+                    intensityChannel === "channel_2"
+                      ? "rgba(255, 255, 255, 0.15)"
+                      : "rgba(255, 255, 255, 0.03)",
+                  color: "white",
+                  border:
+                    intensityChannel === "channel_2"
+                      ? "1px solid rgba(255, 255, 255, 0.2)"
+                      : "1px solid rgba(255, 255, 255, 0.05)",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  textAlign: "left",
+                  transition: "all 0.2s ease",
+                  fontWeight: intensityChannel === "channel_2" ? "500" : "400",
+                }}
+                onMouseEnter={(e) => {
+                  if (intensityChannel !== "channel_2") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.08)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (intensityChannel !== "channel_2") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.03)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
+                  }
+                }}
+              >
+                Channel 2 (mean_intensity_2)
+              </button>
+            </div>
           </div>
-          <div
-            style={{ fontSize: "14px", fontWeight: "500", marginBottom: "4px" }}
-          >
-            {csvFiles.find((file) => file.id === activeTab)?.name}
-          </div>
-          <div style={{ fontSize: "13px", opacity: "0.7" }}>
-            <strong>{filteredData.length.toLocaleString()}</strong> points
-            {intensityFilter !== "all" && (
-              <span style={{ opacity: "0.6" }}>
-                {" "}
-                (filtered from {data.length.toLocaleString()})
-              </span>
-            )}
-          </div>
-        </div>
+        )}
 
-        <div
-          style={{
-            fontSize: "12px",
-            marginTop: "16px",
-            opacity: "0.6",
-            padding: "12px",
-            background: "rgba(255, 255, 255, 0.02)",
-            borderRadius: "6px",
-            border: "1px solid rgba(255, 255, 255, 0.03)",
-          }}
-        >
+        {!sidebarCollapsed && (
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontWeight: "500",
-              marginBottom: "8px",
+              marginBottom: "20px",
+              transition: "opacity 0.3s ease",
             }}
           >
-            <Mouse size={14} />
-            Controls
-            <Question
-              size={12}
-              style={{ cursor: "pointer", opacity: "0.6" }}
-              onMouseEnter={(e) =>
-                showTooltip(
-                  "Mouse controls for navigating the 3D visualization. Drag to rotate the view around the data points, and scroll to zoom in and out.",
-                  e
-                )
-              }
-              onMouseLeave={hideTooltip}
-            />
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                marginBottom: "8px",
+                fontSize: "13px",
+                fontWeight: "500",
+                opacity: "0.9",
+              }}
+            >
+              <MagnifyingGlass size={14} />
+              Intensity Filter
+              <Question
+                size={12}
+                style={{ cursor: "pointer", opacity: "0.6" }}
+                onMouseEnter={(e) =>
+                  showTooltip(
+                    "Filter data points based on their intensity values. Low shows the bottom 33%, Medium shows the middle 33%, and High shows the top 33% of intensity values from the selected channel.",
+                    e
+                  )
+                }
+                onMouseLeave={hideTooltip}
+              />
+            </label>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "4px" }}
+            >
+              <button
+                onClick={() => setIntensityFilter("all")}
+                style={{
+                  padding: "10px 12px",
+                  background:
+                    intensityFilter === "all"
+                      ? "rgba(255, 255, 255, 0.15)"
+                      : "rgba(255, 255, 255, 0.03)",
+                  color: "white",
+                  border:
+                    intensityFilter === "all"
+                      ? "1px solid rgba(255, 255, 255, 0.2)"
+                      : "1px solid rgba(255, 255, 255, 0.05)",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  textAlign: "left",
+                  transition: "all 0.2s ease",
+                  fontWeight: intensityFilter === "all" ? "500" : "400",
+                }}
+                onMouseEnter={(e) => {
+                  if (intensityFilter !== "all") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.08)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (intensityFilter !== "all") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.03)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
+                  }
+                }}
+              >
+                All Intensities
+              </button>
+              <button
+                onClick={() => setIntensityFilter("low")}
+                style={{
+                  padding: "10px 12px",
+                  background:
+                    intensityFilter === "low"
+                      ? "rgba(255, 255, 255, 0.15)"
+                      : "rgba(255, 255, 255, 0.03)",
+                  color: "white",
+                  border:
+                    intensityFilter === "low"
+                      ? "1px solid rgba(255, 255, 255, 0.2)"
+                      : "1px solid rgba(255, 255, 255, 0.05)",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  textAlign: "left",
+                  transition: "all 0.2s ease",
+                  fontWeight: intensityFilter === "low" ? "500" : "400",
+                }}
+                onMouseEnter={(e) => {
+                  if (intensityFilter !== "low") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.08)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (intensityFilter !== "low") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.03)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
+                  }
+                }}
+              >
+                Low Intensity
+              </button>
+              <button
+                onClick={() => setIntensityFilter("medium")}
+                style={{
+                  padding: "10px 12px",
+                  background:
+                    intensityFilter === "medium"
+                      ? "rgba(255, 255, 255, 0.15)"
+                      : "rgba(255, 255, 255, 0.03)",
+                  color: "white",
+                  border:
+                    intensityFilter === "medium"
+                      ? "1px solid rgba(255, 255, 255, 0.2)"
+                      : "1px solid rgba(255, 255, 255, 0.05)",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  textAlign: "left",
+                  transition: "all 0.2s ease",
+                  fontWeight: intensityFilter === "medium" ? "500" : "400",
+                }}
+                onMouseEnter={(e) => {
+                  if (intensityFilter !== "medium") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.08)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (intensityFilter !== "medium") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.03)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
+                  }
+                }}
+              >
+                Medium Intensity
+              </button>
+              <button
+                onClick={() => setIntensityFilter("high")}
+                style={{
+                  padding: "10px 12px",
+                  background:
+                    intensityFilter === "high"
+                      ? "rgba(255, 255, 255, 0.15)"
+                      : "rgba(255, 255, 255, 0.03)",
+                  color: "white",
+                  border:
+                    intensityFilter === "high"
+                      ? "1px solid rgba(255, 255, 255, 0.2)"
+                      : "1px solid rgba(255, 255, 255, 0.05)",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  textAlign: "left",
+                  transition: "all 0.2s ease",
+                  fontWeight: intensityFilter === "high" ? "500" : "400",
+                }}
+                onMouseEnter={(e) => {
+                  if (intensityFilter !== "high") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.08)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (intensityFilter !== "high") {
+                    e.target.style.background = "rgba(255, 255, 255, 0.03)";
+                    e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
+                  }
+                }}
+              >
+                High Intensity
+              </button>
+            </div>
           </div>
+        )}
+
+        {!sidebarCollapsed && (
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              marginBottom: "2px",
+              marginBottom: "20px",
+              transition: "opacity 0.3s ease",
             }}
           >
-            Mouse: Rotate view
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                marginBottom: "8px",
+                fontSize: "13px",
+                fontWeight: "500",
+                opacity: "0.9",
+              }}
+            >
+              <Database size={14} />
+              Dataset
+              <Question
+                size={12}
+                style={{ cursor: "pointer", opacity: "0.6" }}
+                onMouseEnter={(e) =>
+                  showTooltip(
+                    "Select different dataset sizes to explore. Larger datasets show more data points but may require more processing time. The 500k dataset automatically samples 100k points for optimal performance.",
+                    e
+                  )
+                }
+                onMouseLeave={hideTooltip}
+              />
+            </label>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "4px" }}
+            >
+              {csvFiles.map((file) => (
+                <button
+                  key={file.id}
+                  onClick={() => handleTabChange(file.id)}
+                  style={{
+                    padding: "10px 12px",
+                    background:
+                      activeTab === file.id
+                        ? "rgba(255, 255, 255, 0.15)"
+                        : "rgba(255, 255, 255, 0.03)",
+                    color: "white",
+                    border:
+                      activeTab === file.id
+                        ? "1px solid rgba(255, 255, 255, 0.2)"
+                        : "1px solid rgba(255, 255, 255, 0.05)",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontSize: "13px",
+                    textAlign: "left",
+                    transition: "all 0.2s ease",
+                    fontWeight: activeTab === file.id ? "500" : "400",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeTab !== file.id) {
+                      e.target.style.background = "rgba(255, 255, 255, 0.08)";
+                      e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== file.id) {
+                      e.target.style.background = "rgba(255, 255, 255, 0.03)";
+                      e.target.style.borderColor = "rgba(255, 255, 255, 0.05)";
+                    }
+                  }}
+                >
+                  {file.name}
+                </button>
+              ))}
+            </div>
           </div>
+        )}
+
+        {!sidebarCollapsed && (
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
+              background: "rgba(255, 255, 255, 0.03)",
+              padding: "16px",
+              borderRadius: "8px",
+              marginTop: "16px",
+              border: "1px solid rgba(255, 255, 255, 0.05)",
+              transition: "opacity 0.3s ease",
             }}
           >
-            Scroll: Zoom
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontSize: "13px",
+                marginBottom: "8px",
+                opacity: "0.8",
+              }}
+            >
+              <ChartLine size={14} />
+              Current Dataset
+            </div>
+            <div
+              style={{
+                fontSize: "14px",
+                fontWeight: "500",
+                marginBottom: "4px",
+              }}
+            >
+              {csvFiles.find((file) => file.id === activeTab)?.name}
+            </div>
+            <div style={{ fontSize: "13px", opacity: "0.7" }}>
+              <strong>{filteredData.length.toLocaleString()}</strong> points
+              {intensityFilter !== "all" && (
+                <span style={{ opacity: "0.6" }}>
+                  {" "}
+                  (filtered from {data.length.toLocaleString()})
+                </span>
+              )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {!sidebarCollapsed && (
+          <div
+            style={{
+              fontSize: "12px",
+              marginTop: "16px",
+              opacity: "0.6",
+              padding: "12px",
+              background: "rgba(255, 255, 255, 0.02)",
+              borderRadius: "6px",
+              border: "1px solid rgba(255, 255, 255, 0.03)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontWeight: "500",
+                marginBottom: "8px",
+              }}
+            >
+              <Mouse size={14} />
+              Controls
+              <Question
+                size={12}
+                style={{ cursor: "pointer", opacity: "0.6" }}
+                onMouseEnter={(e) =>
+                  showTooltip(
+                    "Mouse controls for navigating the 3D visualization. Drag to rotate the view around the data points, and scroll to zoom in and out.",
+                    e
+                  )
+                }
+                onMouseLeave={hideTooltip}
+              />
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                marginBottom: "2px",
+              }}
+            >
+              Mouse: Rotate view
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              Scroll: Zoom
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 3D Canvas */}
