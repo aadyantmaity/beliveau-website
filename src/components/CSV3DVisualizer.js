@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Instances, Instance } from "@react-three/drei";
 import * as THREE from "three";
@@ -9,9 +15,7 @@ import {
   Database,
   Mouse,
   MagnifyingGlass,
-  CaretDown,
   ChartLine,
-  Info,
   Question,
 } from "@phosphor-icons/react";
 
@@ -68,7 +72,7 @@ function InstancedPoints({
       colorsArray[i] = color;
     }
     return colorsArray;
-  }, [data, colorMode, intensityChannel]);
+  }, [data, colorMode]);
 
   return (
     <Instances
@@ -247,9 +251,9 @@ function CSV3DVisualizer() {
   const [colorMode, setColorMode] = useState("intensity");
   const [intensityChannel, setIntensityChannel] = useState("channel_2");
   const [loading, setLoading] = useState(true);
-  const [dataLoaded, setDataLoaded] = useState(false);
+  const [, setDataLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState("sampled_50");
-  const [performanceMode, setPerformanceMode] = useState("auto");
+  const [performanceMode] = useState("auto");
   const [intensityFilter, setIntensityFilter] = useState("all");
   const [tooltipInfo, setTooltipInfo] = useState({
     show: false,
@@ -259,33 +263,36 @@ function CSV3DVisualizer() {
   });
 
   // Available CSV files
-  const csvFiles = [
-    {
-      id: "sampled_50",
-      name: "50 Observations",
-      file: "sampled_50_observations.csv",
-    },
-    {
-      id: "sampled_500",
-      name: "500 Observations",
-      file: "sampled_500_observations.csv",
-    },
-    {
-      id: "sampled_5000",
-      name: "5,000 Observations",
-      file: "sampled_5000_observations.csv",
-    },
-    {
-      id: "sampled_50000",
-      name: "50,000 Observations",
-      file: "sampled_50000_observations.csv",
-    },
-    {
-      id: "sampled_500000",
-      name: "500,000 Observations",
-      file: "sampled_500000_observations.csv",
-    },
-  ];
+  const csvFiles = useMemo(
+    () => [
+      {
+        id: "sampled_50",
+        name: "50 Observations",
+        file: "sampled_50_observations.csv",
+      },
+      {
+        id: "sampled_500",
+        name: "500 Observations",
+        file: "sampled_500_observations.csv",
+      },
+      {
+        id: "sampled_5000",
+        name: "5,000 Observations",
+        file: "sampled_5000_observations.csv",
+      },
+      {
+        id: "sampled_50000",
+        name: "50,000 Observations",
+        file: "sampled_50000_observations.csv",
+      },
+      {
+        id: "sampled_500000",
+        name: "500,000 Observations",
+        file: "sampled_500000_observations.csv",
+      },
+    ],
+    []
+  );
 
   // Tooltip helper functions
   const showTooltip = (text, event) => {
@@ -301,17 +308,6 @@ function CSV3DVisualizer() {
     setTooltipInfo({ show: false, text: "", x: 0, y: 0 });
   };
 
-  useEffect(() => {
-    // Load sample data by default
-    loadSampleData();
-  }, [activeTab]);
-
-  const handleTabChange = (tabId) => {
-    setActiveTab(tabId);
-    setLoading(true);
-    setDataLoaded(false);
-  };
-
   // Function to randomly sample data points
   const sampleData = (data, sampleSize) => {
     if (data.length <= sampleSize) return data;
@@ -320,7 +316,7 @@ function CSV3DVisualizer() {
     return shuffled.slice(0, sampleSize);
   };
 
-  const loadSampleData = async () => {
+  const loadSampleData = useCallback(async () => {
     try {
       setLoading(true);
       const activeFile = csvFiles.find((file) => file.id === activeTab);
@@ -353,6 +349,17 @@ function CSV3DVisualizer() {
       setDataLoaded(true);
       setTimeout(() => setLoading(false), 200);
     }
+  }, [activeTab, csvFiles, setDataLoaded]);
+
+  useEffect(() => {
+    // Load sample data by default
+    loadSampleData();
+  }, [loadSampleData]);
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setLoading(true);
+    setDataLoaded(false);
   };
 
   // Filter data based on intensity
