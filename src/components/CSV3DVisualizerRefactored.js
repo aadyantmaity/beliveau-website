@@ -12,7 +12,6 @@ import IntensityChannelSection from "./sidebar/IntensityChannelSection";
 import IntensityFilterSection from "./sidebar/IntensityFilterSection";
 import DatasetSection from "./sidebar/DatasetSection";
 import InfoSection from "./sidebar/InfoSection";
-import ControlsInfoSection from "./sidebar/ControlsInfoSection";
 
 // Import utilities
 import {
@@ -105,23 +104,14 @@ function CSV3DVisualizer() {
       >
         <div
           style={{
-            position: "relative",
-            width: "40px",
-            height: "40px",
+            width: "60px",
+            height: "60px",
+            border: "3px solid rgba(255, 255, 255, 0.1)",
+            borderTop: "3px solid #fff",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
           }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              width: "100%",
-              height: "100%",
-              border: "2px solid rgba(255, 255, 255, 0.1)",
-              borderTop: "2px solid #fff",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite",
-            }}
-          ></div>
-        </div>
+        />
         <style>{`
           @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -167,14 +157,15 @@ function CSV3DVisualizer() {
           background: "rgba(0, 0, 0, 0.95)",
           backdropFilter: "blur(10px)",
           color: "white",
-          padding: sidebarCollapsed ? "12px" : "24px",
+          padding: sidebarCollapsed ? "12px" : "0",
           borderRadius: "12px",
           width: sidebarCollapsed ? "60px" : "280px",
-          height: sidebarCollapsed ? "60px" : "auto",
+          height: sidebarCollapsed ? "60px" : "calc(100vh - 120px)",
           border: "1px solid #333333",
           boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
-
           overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <SidebarHeader
@@ -182,53 +173,61 @@ function CSV3DVisualizer() {
           setSidebarCollapsed={setSidebarCollapsed}
         />
 
-        <ColorModeSection
-          colorMode={colorMode}
-          setColorMode={setColorMode}
-          sidebarCollapsed={sidebarCollapsed}
-          showTooltip={showTooltip}
-          hideTooltip={hideTooltip}
-        />
+        {!sidebarCollapsed && (
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              overflowX: "hidden",
+              padding: "0 24px 32px 24px",
+              scrollbarWidth: "thin",
+              scrollbarColor: "rgba(255, 255, 255, 0.3) transparent",
+            }}
+            className="sidebar-scroll"
+          >
+            <ColorModeSection
+              colorMode={colorMode}
+              setColorMode={setColorMode}
+              sidebarCollapsed={sidebarCollapsed}
+              showTooltip={showTooltip}
+              hideTooltip={hideTooltip}
+            />
 
-        <IntensityChannelSection
-          intensityChannel={intensityChannel}
-          setIntensityChannel={setIntensityChannel}
-          sidebarCollapsed={sidebarCollapsed}
-          showTooltip={showTooltip}
-          hideTooltip={hideTooltip}
-        />
+            <IntensityChannelSection
+              intensityChannel={intensityChannel}
+              setIntensityChannel={setIntensityChannel}
+              sidebarCollapsed={sidebarCollapsed}
+              showTooltip={showTooltip}
+              hideTooltip={hideTooltip}
+            />
 
-        <IntensityFilterSection
-          intensityFilter={intensityFilter}
-          setIntensityFilter={setIntensityFilter}
-          sidebarCollapsed={sidebarCollapsed}
-          showTooltip={showTooltip}
-          hideTooltip={hideTooltip}
-        />
+            <IntensityFilterSection
+              intensityFilter={intensityFilter}
+              setIntensityFilter={setIntensityFilter}
+              sidebarCollapsed={sidebarCollapsed}
+              showTooltip={showTooltip}
+              hideTooltip={hideTooltip}
+            />
 
-        <DatasetSection
-          csvFiles={csvFiles}
-          activeTab={activeTab}
-          handleTabChange={handleTabChange}
-          sidebarCollapsed={sidebarCollapsed}
-          showTooltip={showTooltip}
-          hideTooltip={hideTooltip}
-        />
+            <DatasetSection
+              csvFiles={csvFiles}
+              activeTab={activeTab}
+              handleTabChange={handleTabChange}
+              sidebarCollapsed={sidebarCollapsed}
+              showTooltip={showTooltip}
+              hideTooltip={hideTooltip}
+            />
 
-        <InfoSection
-          csvFiles={csvFiles}
-          activeTab={activeTab}
-          filteredData={filteredData}
-          data={data}
-          intensityFilter={intensityFilter}
-          sidebarCollapsed={sidebarCollapsed}
-        />
-
-        <ControlsInfoSection
-          sidebarCollapsed={sidebarCollapsed}
-          showTooltip={showTooltip}
-          hideTooltip={hideTooltip}
-        />
+            <InfoSection
+              csvFiles={csvFiles}
+              activeTab={activeTab}
+              filteredData={filteredData}
+              data={data}
+              intensityFilter={intensityFilter}
+              sidebarCollapsed={sidebarCollapsed}
+            />
+          </div>
+        )}
       </div>
 
       {/* 3D Canvas */}

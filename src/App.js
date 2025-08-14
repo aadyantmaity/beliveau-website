@@ -40,16 +40,6 @@ function AppContent() {
     checkVerification();
   }, [currentUser, checkEmailVerification]);
 
-  // Show loading while checking verification
-  if (checkingVerification) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Checking verification status...</p>
-      </div>
-    );
-  }
-
   // Show email verification page for unverified users
   if (currentUser && !isEmailVerified) {
     return <EmailVerificationPage />;

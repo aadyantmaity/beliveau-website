@@ -7,30 +7,12 @@ function SidebarHeader({ sidebarCollapsed, setSidebarCollapsed }) {
       style={{
         display: "flex",
         alignItems: "center",
-        justifyContent: sidebarCollapsed ? "center" : "space-between",
-        marginBottom: sidebarCollapsed ? "0" : "20px",
+        justifyContent: sidebarCollapsed ? "center" : "flex-end",
+        marginBottom: sidebarCollapsed ? "0" : "12px",
+        padding: sidebarCollapsed ? "0" : "16px 24px 0 24px",
+        height: sidebarCollapsed ? "36px" : "auto",
       }}
     >
-      {!sidebarCollapsed && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <h3
-            style={{
-              margin: "0",
-              fontSize: "18px",
-              fontWeight: "500",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Filters
-          </h3>
-        </div>
-      )}
       <button
         onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
         style={{
@@ -48,7 +30,7 @@ function SidebarHeader({ sidebarCollapsed, setSidebarCollapsed }) {
           minHeight: "32px",
         }}
       >
-        {sidebarCollapsed ? <CaretRight size={20} /> : <CaretLeft size={20} />}
+        {sidebarCollapsed ? <CaretRight size={16} /> : <CaretLeft size={16} />}
       </button>
     </div>
   );
