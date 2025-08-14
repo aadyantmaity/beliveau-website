@@ -2,7 +2,7 @@ import React from "react";
 import "./App.css";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AuthPage from "./components/AuthPage";
-import CSV3DVisualizer from "./components/CSV3DVisualizer";
+import CSV3DVisualizer from "./components/CSV3DVisualizerRefactored";
 import UserProfile from "./components/UserProfile";
 
 function AppContent() {
