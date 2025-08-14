@@ -173,7 +173,7 @@ function CSV3DVisualizer() {
           height: sidebarCollapsed ? "60px" : "auto",
           border: "1px solid #333333",
           boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
-          transition: "all 0.3s ease",
+
           overflow: "hidden",
         }}
       >

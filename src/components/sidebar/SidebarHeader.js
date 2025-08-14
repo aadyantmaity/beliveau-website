@@ -17,7 +17,6 @@ function SidebarHeader({ sidebarCollapsed, setSidebarCollapsed }) {
             display: "flex",
             alignItems: "center",
             gap: "8px",
-            transition: "opacity 0.3s ease",
           }}
         >
           <h3
@@ -44,7 +43,7 @@ function SidebarHeader({ sidebarCollapsed, setSidebarCollapsed }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          transition: "background-color 0.2s ease",
+
           minWidth: "32px",
           minHeight: "32px",
         }}

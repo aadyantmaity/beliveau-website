@@ -19,7 +19,6 @@ function InfoSection({
         borderRadius: "8px",
         marginTop: "16px",
         border: "1px solid rgba(255, 255, 255, 0.05)",
-        transition: "opacity 0.3s ease",
       }}
     >
       <div

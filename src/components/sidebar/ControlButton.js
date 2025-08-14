@@ -17,7 +17,7 @@ function ControlButton({ onClick, isActive, children, style = {} }) {
         cursor: "pointer",
         fontSize: "13px",
         textAlign: "left",
-        transition: "all 0.2s ease",
+
         fontWeight: isActive ? "500" : "400",
         ...style,
       }}

@@ -13,7 +13,7 @@ function ControlSection({
   if (sidebarCollapsed) return null;
 
   return (
-    <div style={{ marginBottom: "20px", transition: "opacity 0.3s ease" }}>
+    <div style={{ marginBottom: "20px" }}>
       <label
         style={{
           display: "flex",

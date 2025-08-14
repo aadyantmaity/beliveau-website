@@ -5,7 +5,8 @@ import {
   signOut,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   sendEmailVerification,
   reload,
 } from "firebase/auth";
@@ -151,54 +152,24 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // Sign in with Google
+  // Sign in with Google using redirect
   async function signInWithGoogle() {
     try {
       const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
-      const user = userCredential.user;
+      // Add custom parameters for better UX
+      provider.setCustomParameters({
+        prompt: "select_account",
+      });
 
-      // Check if user already exists in Firestore
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-
-      if (!userDoc.exists()) {
-        // Add new Google user to Firestore users collection
-        await setDoc(doc(db, "users", user.uid), {
-          email: user.email,
-          uid: user.uid,
-          createdAt: new Date().toISOString(),
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          lastLoginAt: new Date().toISOString(),
-          authProvider: "google",
-          isActive: true,
-          emailVerified: user.emailVerified,
-          updatedAt: new Date().toISOString(),
-        });
-      } else {
-        // Update existing user's last login time
-        await setDoc(
-          doc(db, "users", user.uid),
-          {
-            lastLoginAt: new Date().toISOString(),
-            emailVerified: user.emailVerified,
-            updatedAt: new Date().toISOString(),
-          },
-          { merge: true }
-        );
-      }
-
-      return user;
+      // Use redirect instead of popup
+      await signInWithRedirect(auth, provider);
+      // Note: The page will redirect to Google, so we don't return anything here
     } catch (error) {
       // Handle specific Firebase auth errors
-      if (error.code === "auth/popup-closed-by-user") {
+      if (error.code === "auth/redirect-cancelled-by-user") {
         throw new Error("Sign-in was cancelled. Please try again.");
-      } else if (error.code === "auth/popup-blocked") {
-        throw new Error(
-          "Pop-up was blocked by your browser. Please allow pop-ups and try again."
-        );
-      } else if (error.code === "auth/cancelled-popup-request") {
-        throw new Error("Sign-in was cancelled. Please try again.");
+      } else if (error.code === "auth/redirect-operation-pending") {
+        throw new Error("Sign-in is already in progress. Please wait.");
       } else if (
         error.code === "auth/account-exists-with-different-credential"
       ) {
