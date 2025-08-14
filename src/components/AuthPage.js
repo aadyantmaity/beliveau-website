@@ -9,6 +9,7 @@ const AuthPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
 
   const { signup, login, signInWithGoogle } = useAuth();
 
@@ -16,6 +17,7 @@ const AuthPage = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
+    setSignupSuccess(false);
 
     // Add a timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
@@ -34,6 +36,11 @@ const AuthPage = () => {
           throw new Error("Password must be at least 6 characters");
         }
         await signup(email, password);
+        setSignupSuccess(true);
+        // Clear form after successful signup
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
       }
       clearTimeout(timeoutId);
     } catch (error) {
@@ -47,6 +54,7 @@ const AuthPage = () => {
   const handleGoogleSignIn = async () => {
     setError("");
     setLoading(true);
+    setSignupSuccess(false);
 
     // Add a timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
@@ -64,6 +72,48 @@ const AuthPage = () => {
       setLoading(false);
     }
   };
+
+  // Show success message after signup
+  if (signupSuccess) {
+    return (
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <h1>Check Your Email</h1>
+            <p>We've sent a verification link to your email address.</p>
+          </div>
+
+          <div className="success-message">
+            <div className="success-icon">✓</div>
+            <h2>Account Created Successfully!</h2>
+            <p>
+              Please check your email inbox (and spam folder) for a verification
+              link. Click the link to verify your email address and access the
+              application.
+            </p>
+            <div className="verification-steps">
+              <h3>Next Steps:</h3>
+              <ol>
+                <li>Check your email inbox</li>
+                <li>Click the verification link</li>
+                <li>Return to this page and sign in</li>
+              </ol>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              setSignupSuccess(false);
+              setIsLogin(true);
+            }}
+            className="auth-button primary"
+          >
+            Back to Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-container">

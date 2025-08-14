@@ -167,9 +167,6 @@
   text-align: center;
   margin: 20px 0;
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .divider::before {
@@ -180,7 +177,6 @@
   right: 0;
   height: 1px;
   background: #333333;
-  z-index: 1;
 }
 
 .divider span {
@@ -188,8 +184,6 @@
   padding: 0 15px;
   color: #999999;
   font-size: 14px;
-  position: relative;
-  z-index: 2;
 }
 
 .error-message {
@@ -232,14 +226,75 @@
 @media (max-width: 480px) {
   .auth-card {
     padding: 30px 20px;
-    margin: 10px;
   }
 
   .auth-header h1 {
     font-size: 24px;
   }
 
-  .auth-header p {
-    font-size: 14px;
+  .auth-button {
+    padding: 14px 20px;
+    font-size: 15px;
   }
+}
+
+/* Success message styles */
+.success-message {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.success-icon {
+  background: #28a745;
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  margin: 0 auto 20px;
+}
+
+.success-message h2 {
+  color: #ffffff;
+  margin-bottom: 15px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.success-message p {
+  color: #cccccc;
+  margin-bottom: 20px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.verification-steps {
+  text-align: left;
+  background: #222222;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #333333;
+  margin-bottom: 20px;
+}
+
+.verification-steps h3 {
+  color: #ffffff;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.verification-steps ol {
+  color: #cccccc;
+  line-height: 1.6;
+  padding-left: 20px;
+  margin: 0;
+}
+
+.verification-steps li {
+  margin-bottom: 8px;
+  font-size: 14px;
 }

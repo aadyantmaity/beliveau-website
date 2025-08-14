@@ -6,6 +6,8 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
+  sendEmailVerification,
+  reload,
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
@@ -20,6 +22,36 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [emailVerificationSent, setEmailVerificationSent] = useState(false);
+
+  // Send email verification
+  async function sendVerificationEmail() {
+    try {
+      if (currentUser && !currentUser.emailVerified) {
+        await sendEmailVerification(currentUser);
+        setEmailVerificationSent(true);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error sending verification email:", error);
+      throw new Error("Failed to send verification email. Please try again.");
+    }
+  }
+
+  // Check if user's email is verified
+  async function checkEmailVerification() {
+    try {
+      if (currentUser) {
+        await reload(currentUser);
+        return currentUser.emailVerified;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error checking email verification:", error);
+      return false;
+    }
+  }
 
   // Sign up with email and password
   async function signup(email, password) {
@@ -31,6 +63,10 @@ export function AuthProvider({ children }) {
       );
       const user = userCredential.user;
 
+      // Send verification email immediately after signup
+      await sendEmailVerification(user);
+      setEmailVerificationSent(true);
+
       // Add user to Firestore users collection
       await setDoc(doc(db, "users", user.uid), {
         email: user.email,
@@ -41,6 +77,7 @@ export function AuthProvider({ children }) {
         lastLoginAt: new Date().toISOString(),
         authProvider: "email",
         isActive: true,
+        emailVerified: false,
         updatedAt: new Date().toISOString(),
       });
 
@@ -71,7 +108,26 @@ export function AuthProvider({ children }) {
   // Sign in with email and password
   async function login(email, password) {
     try {
-      return await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // Check if email is verified for email/password users
+      if (
+        user.providerData[0].providerId === "password" &&
+        !user.emailVerified
+      ) {
+        // Send verification email if not already sent
+        if (!emailVerificationSent) {
+          await sendEmailVerification(user);
+          setEmailVerificationSent(true);
+        }
+      }
+
+      return userCredential;
     } catch (error) {
       // Handle specific Firebase auth errors
       if (error.code === "auth/user-not-found") {
@@ -116,6 +172,7 @@ export function AuthProvider({ children }) {
           lastLoginAt: new Date().toISOString(),
           authProvider: "google",
           isActive: true,
+          emailVerified: user.emailVerified,
           updatedAt: new Date().toISOString(),
         });
       } else {
@@ -124,6 +181,7 @@ export function AuthProvider({ children }) {
           doc(db, "users", user.uid),
           {
             lastLoginAt: new Date().toISOString(),
+            emailVerified: user.emailVerified,
             updatedAt: new Date().toISOString(),
           },
           { merge: true }
@@ -161,6 +219,7 @@ export function AuthProvider({ children }) {
 
   // Sign out
   function logout() {
+    setEmailVerificationSent(false);
     return signOut(auth);
   }
 
@@ -179,6 +238,9 @@ export function AuthProvider({ children }) {
     login,
     signInWithGoogle,
     logout,
+    sendVerificationEmail,
+    checkEmailVerification,
+    emailVerificationSent,
   };
 
   return (
