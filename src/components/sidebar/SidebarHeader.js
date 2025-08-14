@@ -17,8 +17,10 @@ function SidebarHeader({ sidebarCollapsed, setSidebarCollapsed }) {
             display: "flex",
             alignItems: "center",
             gap: "8px",
+            transition: "opacity 0.3s ease",
           }}
         >
+          <Cube size={20} weight="fill" />
           <h3
             style={{
               margin: "0",
@@ -27,7 +29,7 @@ function SidebarHeader({ sidebarCollapsed, setSidebarCollapsed }) {
               letterSpacing: "0.5px",
             }}
           >
-            Filters
+            Beliveau 3D Visualizer
           </h3>
         </div>
       )}
@@ -38,13 +40,20 @@ function SidebarHeader({ sidebarCollapsed, setSidebarCollapsed }) {
           border: "none",
           color: "white",
           cursor: "pointer",
-          padding: "4px",
+          padding: "8px",
           borderRadius: "6px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          width: "32px",
-          height: "32px",
+          transition: "background-color 0.2s ease",
+          minWidth: "32px",
+          minHeight: "32px",
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.backgroundColor = "transparent";
         }}
       >
         {sidebarCollapsed ? <CaretRight size={20} /> : <CaretLeft size={20} />}

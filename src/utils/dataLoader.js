@@ -36,6 +36,16 @@ export const loadCSVData = async (filePath) => {
 // Available CSV files configuration
 export const csvFiles = [
   {
+    id: "sampled_50",
+    name: "50 Observations",
+    file: "sampled_50_observations.csv",
+  },
+  {
+    id: "sampled_500",
+    name: "500 Observations",
+    file: "sampled_500_observations.csv",
+  },
+  {
     id: "sampled_5000",
     name: "5,000 Observations",
     file: "sampled_5000_observations.csv",

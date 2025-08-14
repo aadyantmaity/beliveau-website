@@ -12,6 +12,7 @@ import IntensityChannelSection from "./sidebar/IntensityChannelSection";
 import IntensityFilterSection from "./sidebar/IntensityFilterSection";
 import DatasetSection from "./sidebar/DatasetSection";
 import InfoSection from "./sidebar/InfoSection";
+import ControlsInfoSection from "./sidebar/ControlsInfoSection";
 
 // Import utilities
 import { loadCSVData, sampleData, csvFiles } from "../utils/dataLoader";
@@ -24,11 +25,10 @@ function CSV3DVisualizer() {
   const [intensityChannel, setIntensityChannel] = useState("channel_2");
   const [loading, setLoading] = useState(true);
   const [, setDataLoaded] = useState(false);
-  const [activeTab, setActiveTab] = useState("sampled_5000");
+  const [activeTab, setActiveTab] = useState("sampled_50");
   const [performanceMode] = useState("auto");
   const [intensityFilter, setIntensityFilter] = useState("all");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [filterLoading, setFilterLoading] = useState(false);
   const [tooltipInfo, setTooltipInfo] = useState({
     show: false,
     text: "",
@@ -81,13 +81,6 @@ function CSV3DVisualizer() {
     setActiveTab(tabId);
     setLoading(true);
     setDataLoaded(false);
-  };
-
-  const handleIntensityFilterChange = (newFilter) => {
-    setFilterLoading(true);
-    setIntensityFilter(newFilter);
-    // Use setTimeout to allow the UI to update before processing
-    setTimeout(() => setFilterLoading(false), 50);
   };
 
   // Filter data based on intensity
@@ -176,6 +169,7 @@ function CSV3DVisualizer() {
           height: sidebarCollapsed ? "60px" : "auto",
           border: "1px solid #333333",
           boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+          transition: "all 0.3s ease",
           overflow: "hidden",
         }}
       >
@@ -202,8 +196,7 @@ function CSV3DVisualizer() {
 
         <IntensityFilterSection
           intensityFilter={intensityFilter}
-          setIntensityFilter={handleIntensityFilterChange}
-          filterLoading={filterLoading}
+          setIntensityFilter={setIntensityFilter}
           sidebarCollapsed={sidebarCollapsed}
           showTooltip={showTooltip}
           hideTooltip={hideTooltip}
@@ -225,6 +218,12 @@ function CSV3DVisualizer() {
           data={data}
           intensityFilter={intensityFilter}
           sidebarCollapsed={sidebarCollapsed}
+        />
+
+        <ControlsInfoSection
+          sidebarCollapsed={sidebarCollapsed}
+          showTooltip={showTooltip}
+          hideTooltip={hideTooltip}
         />
       </div>
 
