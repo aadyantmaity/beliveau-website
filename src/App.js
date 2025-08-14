@@ -9,7 +9,7 @@ import UserProfile from "./components/UserProfile";
 function AppContent() {
   const { currentUser, checkEmailVerification } = useAuth();
   const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const [setCheckingVerification] = useState(true);
+  const [, setCheckingVerification] = useState(true);
 
   // Check email verification status when user changes
   useEffect(() => {
