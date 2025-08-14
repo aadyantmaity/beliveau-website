@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import "./UserProfile.css";
 
 const UserProfile = () => {
   const { currentUser, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const handleLogout = async () => {
     try {
@@ -17,6 +18,23 @@ const UserProfile = () => {
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   if (!currentUser) return null;
 
@@ -42,7 +60,7 @@ const UserProfile = () => {
       </div>
 
       {isDropdownOpen && (
-        <div className="user-dropdown">
+        <div className="user-dropdown" ref={dropdownRef}>
           <div className="user-info">
             <div className="user-name">{currentUser.displayName || "User"}</div>
             <div className="user-email">{currentUser.email}</div>
