@@ -6,11 +6,10 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithRedirect,
-  getRedirectResult,
   sendEmailVerification,
   reload,
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import LoadingSpinner from "../components/LoadingSpinner";
 

@@ -5,7 +5,7 @@ import "./EmailVerificationPage.css";
 const EmailVerificationPage = () => {
   const { currentUser, sendVerificationEmail, checkEmailVerification, logout } =
     useAuth();
-  const [verificationSent, setVerificationSent] = useState(false);
+  const [setVerificationSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
