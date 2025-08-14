@@ -1,5 +1,5 @@
 import React from "react";
-import { Cube, CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 
 function SidebarHeader({ sidebarCollapsed, setSidebarCollapsed }) {
   return (
@@ -20,7 +20,6 @@ function SidebarHeader({ sidebarCollapsed, setSidebarCollapsed }) {
             transition: "opacity 0.3s ease",
           }}
         >
-          <Cube size={20} weight="fill" />
           <h3
             style={{
               margin: "0",
@@ -29,7 +28,7 @@ function SidebarHeader({ sidebarCollapsed, setSidebarCollapsed }) {
               letterSpacing: "0.5px",
             }}
           >
-            Beliveau 3D Visualizer
+            Filters
           </h3>
         </div>
       )}
@@ -48,12 +47,6 @@ function SidebarHeader({ sidebarCollapsed, setSidebarCollapsed }) {
           transition: "background-color 0.2s ease",
           minWidth: "32px",
           minHeight: "32px",
-        }}
-        onMouseEnter={(e) => {
-          e.target.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.backgroundColor = "transparent";
         }}
       >
         {sidebarCollapsed ? <CaretRight size={20} /> : <CaretLeft size={20} />}

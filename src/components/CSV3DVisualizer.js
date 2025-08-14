@@ -10,7 +10,6 @@ import { OrbitControls, Instances, Instance } from "@react-three/drei";
 import * as THREE from "three";
 import Papa from "papaparse";
 import {
-  Cube,
   Palette,
   Database,
   Mouse,
@@ -254,7 +253,7 @@ function CSV3DVisualizer() {
   const [intensityChannel, setIntensityChannel] = useState("channel_2");
   const [loading, setLoading] = useState(true);
   const [, setDataLoaded] = useState(false);
-  const [activeTab, setActiveTab] = useState("sampled_50");
+  const [activeTab, setActiveTab] = useState("sampled_5000");
   const [performanceMode] = useState("auto");
   const [intensityFilter, setIntensityFilter] = useState("all");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -268,16 +267,6 @@ function CSV3DVisualizer() {
   // Available CSV files
   const csvFiles = useMemo(
     () => [
-      {
-        id: "sampled_50",
-        name: "50 Observations",
-        file: "sampled_50_observations.csv",
-      },
-      {
-        id: "sampled_500",
-        name: "500 Observations",
-        file: "sampled_500_observations.csv",
-      },
       {
         id: "sampled_5000",
         name: "5,000 Observations",
@@ -490,7 +479,7 @@ function CSV3DVisualizer() {
           height: sidebarCollapsed ? "60px" : "auto",
           border: "1px solid #333333",
           boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
-          transition: "all 0.3s ease",
+
           overflow: "hidden",
         }}
       >

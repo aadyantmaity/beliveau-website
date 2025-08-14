@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["http://localhost:1800", "https://beliveau3dviz.netlify.app"],
+    "method": ["GET", "POST", "HEAD", "OPTIONS"],
+    "responseHeader": ["Content-Type", "x-goog-meta-*"],
+    "maxAgeSeconds": 3600
+  }
+]

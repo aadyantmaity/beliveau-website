@@ -15,7 +15,11 @@ import InfoSection from "./sidebar/InfoSection";
 import ControlsInfoSection from "./sidebar/ControlsInfoSection";
 
 // Import utilities
-import { loadCSVData, sampleData, csvFiles } from "../utils/dataLoader";
+import {
+  loadCSVDataFromFirebase,
+  sampleData,
+  csvFiles,
+} from "../utils/dataLoader";
 import { filterDataByIntensity } from "../utils/dataFilter";
 
 // Main component
@@ -25,7 +29,7 @@ function CSV3DVisualizer() {
   const [intensityChannel, setIntensityChannel] = useState("channel_2");
   const [loading, setLoading] = useState(true);
   const [, setDataLoaded] = useState(false);
-  const [activeTab, setActiveTab] = useState("sampled_50");
+  const [activeTab, setActiveTab] = useState("sampled_5000");
   const [performanceMode] = useState("auto");
   const [intensityFilter, setIntensityFilter] = useState("all");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -54,7 +58,7 @@ function CSV3DVisualizer() {
     try {
       setLoading(true);
       const activeFile = csvFiles.find((file) => file.id === activeTab);
-      let parsedData = await loadCSVData(activeFile.file);
+      let parsedData = await loadCSVDataFromFirebase(activeFile.file);
 
       // For 500,000 observations, randomly sample 100,000 points
       if (activeTab === "sampled_500000") {
@@ -66,7 +70,7 @@ function CSV3DVisualizer() {
       // Keep loading true for a bit longer to ensure smooth transition
       setTimeout(() => setLoading(false), 200);
     } catch (error) {
-      console.error("Error loading sample data:", error);
+      console.error("Error loading sample data from Firebase Storage:", error);
       setDataLoaded(true);
       setTimeout(() => setLoading(false), 200);
     }
