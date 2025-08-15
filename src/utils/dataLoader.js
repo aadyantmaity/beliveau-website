@@ -97,10 +97,110 @@ export const loadCSVData = async (filePath) => {
   }
 };
 
+// Load and parse all-features CSV data from Firebase Storage
+export const loadAllFeaturesDataFromFirebase = async (fileName) => {
+  try {
+    console.log(
+      `Loading all-features CSV file from Firebase Storage: csv-files/${fileName}`
+    );
+
+    // Create a reference to the file in the csv-files folder
+    const fileRef = ref(storage, `csv-files/${fileName}`);
+    console.log("File reference created:", fileRef.fullPath);
+
+    // Get the file as a Blob to avoid CORS issues
+    console.log("Attempting to get blob...");
+    const blob = await getBlob(fileRef);
+    console.log("Blob retrieved successfully:", blob.type, blob.size, "bytes");
+
+    // Convert blob to text
+    const csvText = await blob.text();
+    console.log(`CSV text length: ${csvText.length} characters`);
+
+    console.log(`Successfully loaded ${fileName}, size: ${blob.size} bytes`);
+
+    // Parse CSV using PapaParse
+    const result = Papa.parse(csvText, { header: true });
+    console.log("CSV parsing result:", result.data.length, "rows");
+
+    let parsedData = result.data
+      .map((row) => ({
+        centroid_x: parseFloat(row.centroid_x),
+        centroid_y: parseFloat(row.centroid_y),
+        centroid_z: parseFloat(row.centroid_z),
+        mean_intensity_0: parseFloat(row["mean_intensity-0"]),
+        mean_intensity_1: parseFloat(row["mean_intensity-1"]),
+        mean_intensity_2: parseFloat(row["mean_intensity-2"]),
+        major_magnitude: parseFloat(row.major_magnitude),
+        intermediate_magnitude: parseFloat(row.intermediate_magnitude),
+        minor_magnitude: parseFloat(row.minor_magnitude),
+        cos_major: parseFloat(row.cos_major),
+        cos_intermediate: parseFloat(row.cos_intermediate),
+        cos_minor: parseFloat(row.cos_minor),
+      }))
+      .filter((row) => !isNaN(row.centroid_x));
+
+    console.log(`Parsed ${parsedData.length} data points from ${fileName}`);
+    return parsedData;
+  } catch (error) {
+    console.error(
+      "Error loading all-features CSV data from Firebase Storage:",
+      error
+    );
+    console.error("Error details:", {
+      code: error.code,
+      message: error.message,
+      stack: error.stack,
+    });
+
+    // If Firebase Storage fails, try to fall back to the public folder
+    console.log("Attempting fallback to public folder...");
+    try {
+      return await loadAllFeaturesData(fileName);
+    } catch (fallbackError) {
+      console.error("Fallback also failed:", fallbackError);
+      throw new Error(
+        `Failed to load all-features CSV file ${fileName} from both Firebase Storage and public folder`
+      );
+    }
+  }
+};
+
+// Load and parse all-features CSV data (legacy function for backward compatibility)
+export const loadAllFeaturesData = async (filePath) => {
+  try {
+    const response = await fetch(`/${filePath}`);
+    const csvText = await response.text();
+    const result = Papa.parse(csvText, { header: true });
+
+    let parsedData = result.data
+      .map((row) => ({
+        centroid_x: parseFloat(row.centroid_x),
+        centroid_y: parseFloat(row.centroid_y),
+        centroid_z: parseFloat(row.centroid_z),
+        mean_intensity_0: parseFloat(row["mean_intensity-0"]),
+        mean_intensity_1: parseFloat(row["mean_intensity-1"]),
+        mean_intensity_2: parseFloat(row["mean_intensity-2"]),
+        major_magnitude: parseFloat(row.major_magnitude),
+        intermediate_magnitude: parseFloat(row.intermediate_magnitude),
+        minor_magnitude: parseFloat(row.minor_magnitude),
+        cos_major: parseFloat(row.cos_major),
+        cos_intermediate: parseFloat(row.cos_intermediate),
+        cos_minor: parseFloat(row.cos_minor),
+      }))
+      .filter((row) => !isNaN(row.centroid_x));
+
+    return parsedData;
+  } catch (error) {
+    console.error("Error loading all-features CSV data:", error);
+    throw error;
+  }
+};
+
 // Available CSV files configuration
 export const csvFiles = [
   {
-    id: "sampled_5000",
+    id: "sampled_5000_observations",
     name: "5,000 Observations",
     file: "sampled_5000_observations.csv",
   },

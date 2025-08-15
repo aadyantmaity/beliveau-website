@@ -2,12 +2,14 @@ import React from "react";
 import { ChartLine } from "@phosphor-icons/react";
 
 function InfoSection({
-  csvFiles,
-  activeTab,
+  datasetName,
   filteredData,
   data,
   intensityFilter,
+  selectedMagnitudes = [],
+  selectedCosines = [],
   sidebarCollapsed,
+  filtering = false,
 }) {
   if (sidebarCollapsed) return null;
 
@@ -35,15 +37,23 @@ function InfoSection({
         Current Dataset
       </div>
       <div style={{ fontSize: "14px", fontWeight: "500", marginBottom: "4px" }}>
-        {csvFiles.find((file) => file.id === activeTab)?.name}
+        {datasetName}
       </div>
       <div style={{ fontSize: "13px", opacity: "0.7" }}>
-        <strong>{filteredData.length.toLocaleString()}</strong> points
-        {intensityFilter !== "all" && (
-          <span style={{ opacity: "0.6" }}>
-            {" "}
-            (filtered from {data.length.toLocaleString()})
-          </span>
+        {filtering ? (
+          <span style={{ color: "#4A90E2" }}>Filtering...</span>
+        ) : (
+          <>
+            <strong>{filteredData.length.toLocaleString()}</strong> points
+            {(intensityFilter !== "all" ||
+              selectedMagnitudes.length > 0 ||
+              selectedCosines.length > 0) && (
+              <span style={{ opacity: "0.6" }}>
+                {" "}
+                (filtered from {data.length.toLocaleString()})
+              </span>
+            )}
+          </>
         )}
       </div>
     </div>

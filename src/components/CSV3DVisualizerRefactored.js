@@ -10,7 +10,6 @@ import SidebarHeader from "./sidebar/SidebarHeader";
 import ColorModeSection from "./sidebar/ColorModeSection";
 import IntensityChannelSection from "./sidebar/IntensityChannelSection";
 import IntensityFilterSection from "./sidebar/IntensityFilterSection";
-import DatasetSection from "./sidebar/DatasetSection";
 import InfoSection from "./sidebar/InfoSection";
 
 // Import utilities
@@ -22,13 +21,12 @@ import {
 import { filterDataByIntensity } from "../utils/dataFilter";
 
 // Main component
-function CSV3DVisualizer() {
+function CSV3DVisualizer({ datasetId = "sampled_5000" }) {
   const [data, setData] = useState([]);
   const [colorMode, setColorMode] = useState("intensity");
   const [intensityChannel, setIntensityChannel] = useState("channel_2");
   const [loading, setLoading] = useState(true);
   const [, setDataLoaded] = useState(false);
-  const [activeTab, setActiveTab] = useState("sampled_5000");
   const [performanceMode] = useState("auto");
   const [intensityFilter, setIntensityFilter] = useState("all");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -56,11 +54,11 @@ function CSV3DVisualizer() {
   const loadSampleData = useCallback(async () => {
     try {
       setLoading(true);
-      const activeFile = csvFiles.find((file) => file.id === activeTab);
+      const activeFile = csvFiles.find((file) => file.id === datasetId);
       let parsedData = await loadCSVDataFromFirebase(activeFile.file);
 
       // For 500,000 observations, randomly sample 100,000 points
-      if (activeTab === "sampled_500000") {
+      if (datasetId === "sampled_500000") {
         parsedData = sampleData(parsedData, 100000);
       }
 
@@ -73,18 +71,12 @@ function CSV3DVisualizer() {
       setDataLoaded(true);
       setTimeout(() => setLoading(false), 200);
     }
-  }, [activeTab, setDataLoaded]);
+  }, [datasetId, setDataLoaded]);
 
   useEffect(() => {
     // Load sample data by default
     loadSampleData();
   }, [loadSampleData]);
-
-  const handleTabChange = (tabId) => {
-    setActiveTab(tabId);
-    setLoading(true);
-    setDataLoaded(false);
-  };
 
   // Filter data based on intensity
   const filteredData = useMemo(() => {
@@ -98,8 +90,13 @@ function CSV3DVisualizer() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          height: "100vh",
+          height: "calc(100vh - 72px)",
           background: "#000",
+          position: "absolute",
+          top: "72px",
+          left: 0,
+          right: 0,
+          bottom: 0,
         }}
       >
         <div
@@ -159,7 +156,7 @@ function CSV3DVisualizer() {
           color: "white",
           padding: sidebarCollapsed ? "12px" : "0",
           borderRadius: "12px",
-          width: sidebarCollapsed ? "60px" : "280px",
+          width: sidebarCollapsed ? "60px" : "320px",
           height: sidebarCollapsed ? "60px" : "calc(100vh - 120px)",
           border: "1px solid #333333",
           boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
@@ -209,21 +206,16 @@ function CSV3DVisualizer() {
               hideTooltip={hideTooltip}
             />
 
-            <DatasetSection
-              csvFiles={csvFiles}
-              activeTab={activeTab}
-              handleTabChange={handleTabChange}
-              sidebarCollapsed={sidebarCollapsed}
-              showTooltip={showTooltip}
-              hideTooltip={hideTooltip}
-            />
-
             <InfoSection
-              csvFiles={csvFiles}
-              activeTab={activeTab}
+              datasetName={
+                csvFiles.find((file) => file.id === datasetId)?.name ||
+                "Unknown Dataset"
+              }
               filteredData={filteredData}
               data={data}
               intensityFilter={intensityFilter}
+              selectedMagnitudes={[]}
+              selectedCosines={[]}
               sidebarCollapsed={sidebarCollapsed}
             />
           </div>

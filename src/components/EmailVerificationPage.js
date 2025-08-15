@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import "./EmailVerificationPage.css";
+import LoadingSpinner from "./LoadingSpinner";
 
 const EmailVerificationPage = () => {
   const { currentUser, sendVerificationEmail, checkEmailVerification, logout } =
@@ -10,13 +11,34 @@ const EmailVerificationPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [countdown, setCountdown] = useState(0);
+  const [initialCheckComplete, setInitialCheckComplete] = useState(false);
 
   // Check verification status on component mount
   useEffect(() => {
-    if (currentUser) {
-      setIsVerified(currentUser.emailVerified);
-    }
-  }, [currentUser]);
+    const checkInitialVerification = async () => {
+      if (currentUser) {
+        try {
+          // For Google users, email is automatically verified
+          if (currentUser.providerData[0]?.providerId === "google") {
+            setIsVerified(true);
+          } else {
+            // For email/password users, check verification status
+            const verified = await checkEmailVerification();
+            setIsVerified(verified);
+          }
+        } catch (error) {
+          console.error("Error checking initial verification:", error);
+          setIsVerified(false);
+        } finally {
+          setInitialCheckComplete(true);
+        }
+      } else {
+        setInitialCheckComplete(true);
+      }
+    };
+
+    checkInitialVerification();
+  }, [currentUser, checkEmailVerification]);
 
   // Countdown timer for resend button
   useEffect(() => {
@@ -68,6 +90,11 @@ const EmailVerificationPage = () => {
       console.error("Error signing out:", error);
     }
   };
+
+  // Show loading spinner while doing initial verification check
+  if (!initialCheckComplete) {
+    return <LoadingSpinner />;
+  }
 
   if (isVerified) {
     return (

@@ -1,0 +1,113 @@
+.header-tab-navigation {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 24px;
+}
+
+.tab-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+}
+
+.header-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  min-width: 120px;
+  height: 48px;
+}
+
+.header-tab:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.header-tab.active {
+  background: linear-gradient(
+    135deg,
+    rgba(74, 144, 226, 0.2),
+    rgba(74, 144, 226, 0.1)
+  );
+  border-color: rgba(74, 144, 226, 0.4);
+  color: #4a90e2;
+  box-shadow: 0 8px 25px rgba(74, 144, 226, 0.2);
+}
+
+.tab-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-name {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.active-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: linear-gradient(90deg, #4a90e2, #64b5f6);
+  border-radius: 2px 2px 0 0;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 20px;
+    opacity: 1;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+  .header-tab {
+    min-width: 100px;
+    padding: 10px 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-tab-navigation {
+    padding: 0 16px;
+  }
+
+  .tab-container {
+    gap: 6px;
+  }
+
+  .header-tab {
+    min-width: 80px;
+    padding: 8px 12px;
+  }
+
+  .tab-name {
+    font-size: 13px;
+  }
+}

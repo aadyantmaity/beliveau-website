@@ -43,13 +43,17 @@ export function AuthProvider({ children }) {
   async function checkEmailVerification() {
     try {
       if (currentUser) {
-        await reload(currentUser);
+        // Only reload if the user is not already verified
+        if (!currentUser.emailVerified) {
+          await reload(currentUser);
+        }
         return currentUser.emailVerified;
       }
       return false;
     } catch (error) {
       console.error("Error checking email verification:", error);
-      return false;
+      // Return the current state if reload fails
+      return currentUser?.emailVerified || false;
     }
   }
 
