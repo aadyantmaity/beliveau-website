@@ -32,7 +32,9 @@ const HeaderTabNavigation = () => {
     <div className="header-tab-navigation">
       <div className="tab-container">
         {tabs.map((tab) => {
-          const isActive = location.pathname === tab.path;
+          const isActive =
+            location.pathname === tab.path ||
+            (tab.id === "5k" && location.pathname === "/");
 
           return (
             <Link
