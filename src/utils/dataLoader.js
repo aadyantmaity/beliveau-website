@@ -1,17 +1,66 @@
 import Papa from "papaparse";
-import { ref, getBlob, listAll, getDownloadURL } from "firebase/storage";
+import { ref, getBlob } from "firebase/storage";
 import { storage } from "../firebase";
 
 // Function to randomly sample data points
 export const sampleData = (data, sampleSize) => {
-  if (data.length <= sampleSize) return data;
+  const startTime = performance.now();
+  const startTimestamp = new Date().toISOString();
 
+  console.log(
+    `🎲 [${startTimestamp}] Starting data sampling: ${data.length} → ${sampleSize} points`
+  );
+
+  if (data.length <= sampleSize) {
+    const endTime = performance.now();
+    const totalTime = endTime - startTime;
+    console.log(
+      `✅ [${new Date().toISOString()}] Sampling completed in ${totalTime.toFixed(
+        2
+      )}ms (no sampling needed)`
+    );
+    return data;
+  }
+
+  const shuffleStartTime = performance.now();
   const shuffled = [...data].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, sampleSize);
+  const shuffleEndTime = performance.now();
+
+  const sliceStartTime = performance.now();
+  const result = shuffled.slice(0, sampleSize);
+  const sliceEndTime = performance.now();
+
+  const endTime = performance.now();
+  const endTimestamp = new Date().toISOString();
+  const totalTime = endTime - startTime;
+
+  console.log(
+    `✅ [${endTimestamp}] Sampling completed in ${totalTime.toFixed(2)}ms`
+  );
+  console.log(`📊 Sampling breakdown:`);
+  console.log(
+    `   - Shuffling: ${(shuffleEndTime - shuffleStartTime).toFixed(2)}ms`
+  );
+  console.log(`   - Slicing: ${(sliceEndTime - sliceStartTime).toFixed(2)}ms`);
+  console.log(
+    `   - Total overhead: ${(
+      totalTime -
+      (shuffleEndTime - shuffleStartTime) -
+      (sliceEndTime - sliceStartTime)
+    ).toFixed(2)}ms`
+  );
+
+  return result;
 };
 
 // Load and parse CSV data from Firebase Storage
 export const loadCSVDataFromFirebase = async (fileName) => {
+  const startTime = performance.now();
+  const startTimestamp = new Date().toISOString();
+
+  console.log(`🚀 [${startTimestamp}] Starting data parsing for: ${fileName}`);
+  console.log(`⏱️  [${startTimestamp}] Performance timer started`);
+
   try {
     console.log(
       `Loading CSV file from Firebase Storage: csv-files/${fileName}`
@@ -25,19 +74,42 @@ export const loadCSVDataFromFirebase = async (fileName) => {
 
     // Get the file as a Blob to avoid CORS issues
     console.log("Attempting to get blob...");
+    const blobStartTime = performance.now();
     const blob = await getBlob(fileRef);
+    const blobEndTime = performance.now();
+    console.log(
+      `📥 Blob retrieval completed in ${(blobEndTime - blobStartTime).toFixed(
+        2
+      )}ms`
+    );
     console.log("Blob retrieved successfully:", blob.type, blob.size, "bytes");
 
     // Convert blob to text
+    const textStartTime = performance.now();
     const csvText = await blob.text();
+    const textEndTime = performance.now();
+    console.log(
+      `📝 Blob to text conversion completed in ${(
+        textEndTime - textStartTime
+      ).toFixed(2)}ms`
+    );
     console.log(`CSV text length: ${csvText.length} characters`);
 
     console.log(`Successfully loaded ${fileName}, size: ${blob.size} bytes`);
 
     // Parse CSV using PapaParse
+    const parseStartTime = performance.now();
     const result = Papa.parse(csvText, { header: true });
+    const parseEndTime = performance.now();
+    console.log(
+      `🔍 CSV parsing completed in ${(parseEndTime - parseStartTime).toFixed(
+        2
+      )}ms`
+    );
     console.log("CSV parsing result:", result.data.length, "rows");
 
+    // Data transformation and filtering
+    const transformStartTime = performance.now();
     let parsedData = result.data
       .map((row) => ({
         centroid_x: parseFloat(row.centroid_x),
@@ -48,8 +120,47 @@ export const loadCSVDataFromFirebase = async (fileName) => {
         mean_intensity_2: parseFloat(row["mean_intensity-2"]),
       }))
       .filter((row) => !isNaN(row.centroid_x));
+    const transformEndTime = performance.now();
+    console.log(
+      `⚙️  Data transformation completed in ${(
+        transformEndTime - transformStartTime
+      ).toFixed(2)}ms`
+    );
 
-    console.log(`Parsed ${parsedData.length} data points from ${fileName}`);
+    const endTime = performance.now();
+    const endTimestamp = new Date().toISOString();
+    const totalTime = endTime - startTime;
+
+    console.log(`✅ [${endTimestamp}] Data parsing completed for: ${fileName}`);
+    console.log(
+      `⏱️  [${endTimestamp}] Total parsing time: ${totalTime.toFixed(2)}ms`
+    );
+    console.log(`📊 Performance breakdown:`);
+    console.log(
+      `   - Blob retrieval: ${(blobEndTime - blobStartTime).toFixed(2)}ms`
+    );
+    console.log(
+      `   - Text conversion: ${(textEndTime - textStartTime).toFixed(2)}ms`
+    );
+    console.log(
+      `   - CSV parsing: ${(parseEndTime - parseStartTime).toFixed(2)}ms`
+    );
+    console.log(
+      `   - Data transformation: ${(
+        transformEndTime - transformStartTime
+      ).toFixed(2)}ms`
+    );
+    console.log(
+      `   - Total overhead: ${(
+        totalTime -
+        (blobEndTime - blobStartTime) -
+        (textEndTime - textStartTime) -
+        (parseEndTime - parseStartTime) -
+        (transformEndTime - transformStartTime)
+      ).toFixed(2)}ms`
+    );
+    console.log(`📈 Parsed ${parsedData.length} data points from ${fileName}`);
+
     return parsedData;
   } catch (error) {
     console.error("Error loading CSV data from Firebase Storage:", error);
@@ -99,6 +210,14 @@ export const loadCSVData = async (filePath) => {
 
 // Load and parse all-features CSV data from Firebase Storage
 export const loadAllFeaturesDataFromFirebase = async (fileName) => {
+  const startTime = performance.now();
+  const startTimestamp = new Date().toISOString();
+
+  console.log(
+    `🚀 [${startTimestamp}] Starting all-features data parsing for: ${fileName}`
+  );
+  console.log(`⏱️  [${startTimestamp}] Performance timer started`);
+
   try {
     console.log(
       `Loading all-features CSV file from Firebase Storage: csv-files/${fileName}`
@@ -110,19 +229,42 @@ export const loadAllFeaturesDataFromFirebase = async (fileName) => {
 
     // Get the file as a Blob to avoid CORS issues
     console.log("Attempting to get blob...");
+    const blobStartTime = performance.now();
     const blob = await getBlob(fileRef);
+    const blobEndTime = performance.now();
+    console.log(
+      `📥 Blob retrieval completed in ${(blobEndTime - blobStartTime).toFixed(
+        2
+      )}ms`
+    );
     console.log("Blob retrieved successfully:", blob.type, blob.size, "bytes");
 
     // Convert blob to text
+    const textStartTime = performance.now();
     const csvText = await blob.text();
+    const textEndTime = performance.now();
+    console.log(
+      `📝 Blob to text conversion completed in ${(
+        textEndTime - textStartTime
+      ).toFixed(2)}ms`
+    );
     console.log(`CSV text length: ${csvText.length} characters`);
 
     console.log(`Successfully loaded ${fileName}, size: ${blob.size} bytes`);
 
     // Parse CSV using PapaParse
+    const parseStartTime = performance.now();
     const result = Papa.parse(csvText, { header: true });
+    const parseEndTime = performance.now();
+    console.log(
+      `🔍 CSV parsing completed in ${(parseEndTime - parseStartTime).toFixed(
+        2
+      )}ms`
+    );
     console.log("CSV parsing result:", result.data.length, "rows");
 
+    // Data transformation and filtering
+    const transformStartTime = performance.now();
     let parsedData = result.data
       .map((row) => ({
         centroid_x: parseFloat(row.centroid_x),
@@ -139,8 +281,49 @@ export const loadAllFeaturesDataFromFirebase = async (fileName) => {
         cos_minor: parseFloat(row.cos_minor),
       }))
       .filter((row) => !isNaN(row.centroid_x));
+    const transformEndTime = performance.now();
+    console.log(
+      `⚙️  Data transformation completed in ${(
+        transformEndTime - transformStartTime
+      ).toFixed(2)}ms`
+    );
 
-    console.log(`Parsed ${parsedData.length} data points from ${fileName}`);
+    const endTime = performance.now();
+    const endTimestamp = new Date().toISOString();
+    const totalTime = endTime - startTime;
+
+    console.log(
+      `✅ [${endTimestamp}] All-features data parsing completed for: ${fileName}`
+    );
+    console.log(
+      `⏱️  [${endTimestamp}] Total parsing time: ${totalTime.toFixed(2)}ms`
+    );
+    console.log(`📊 Performance breakdown:`);
+    console.log(
+      `   - Blob retrieval: ${(blobEndTime - blobStartTime).toFixed(2)}ms`
+    );
+    console.log(
+      `   - Text conversion: ${(textEndTime - textStartTime).toFixed(2)}ms`
+    );
+    console.log(
+      `   - CSV parsing: ${(parseEndTime - parseStartTime).toFixed(2)}ms`
+    );
+    console.log(
+      `   - Data transformation: ${(
+        transformEndTime - transformStartTime
+      ).toFixed(2)}ms`
+    );
+    console.log(
+      `   - Total overhead: ${(
+        totalTime -
+        (blobEndTime - blobStartTime) -
+        (textEndTime - textStartTime) -
+        (parseEndTime - parseStartTime) -
+        (transformEndTime - transformStartTime)
+      ).toFixed(2)}ms`
+    );
+    console.log(`📈 Parsed ${parsedData.length} data points from ${fileName}`);
+
     return parsedData;
   } catch (error) {
     console.error(
@@ -215,31 +398,3 @@ export const csvFiles = [
     file: "sampled_500000_observations.csv",
   },
 ];
-
-// Test function to verify Firebase Storage connectivity
-export const testFirebaseStorage = async () => {
-  try {
-    console.log("Testing Firebase Storage connectivity...");
-
-    // List files in the csv-files folder
-    const csvFilesRef = ref(storage, "csv-files");
-    const result = await listAll(csvFilesRef);
-
-    console.log(
-      "Files found in csv-files folder:",
-      result.items.map((item) => item.name)
-    );
-
-    // Test getting download URL for first file
-    if (result.items.length > 0) {
-      const firstFile = result.items[0];
-      const downloadURL = await getDownloadURL(firstFile);
-      console.log("Download URL test successful:", downloadURL);
-    }
-
-    return result.items.map((item) => item.name);
-  } catch (error) {
-    console.error("Firebase Storage test failed:", error);
-    throw error;
-  }
-};

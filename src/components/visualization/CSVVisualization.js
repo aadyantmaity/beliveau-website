@@ -1,7 +1,41 @@
 import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
+import { Text } from "@react-three/drei";
 import DataPoint from "./DataPoint";
 import InstancedPoints from "./InstancedPoints";
+
+// Anatomical labels component for 3D space orientation
+function AnatomicalLabels() {
+  return (
+    <group>
+      {/* Anterior label - positioned in front of the data */}
+      <Text
+        position={[15, 0, 0]}
+        fontSize={1.2}
+        color="#ffffff"
+        anchorX="center"
+        anchorY="middle"
+        outlineWidth={0.1}
+        outlineColor="#000000"
+      >
+        ANTERIOR
+      </Text>
+
+      {/* Posterior label - positioned behind the data */}
+      <Text
+        position={[-15, 0, 0]}
+        fontSize={1.2}
+        color="#ffffff"
+        anchorX="center"
+        anchorY="middle"
+        outlineWidth={0.1}
+        outlineColor="#000000"
+      >
+        POSTERIOR
+      </Text>
+    </group>
+  );
+}
 
 // Main visualization component
 function CSVVisualization({
@@ -87,7 +121,10 @@ function CSVVisualization({
     }));
   };
 
-  const normalizedData = normalizeData(data, intensityChannel);
+  const normalizedData = useMemo(
+    () => normalizeData(data, intensityChannel),
+    [data, intensityChannel]
+  );
 
   const getColor = (intensity, mode) => {
     switch (mode) {
@@ -108,6 +145,7 @@ function CSVVisualization({
           performanceMode={performanceMode}
           intensityChannel={intensityChannel}
         />
+        <AnatomicalLabels />
       </group>
     );
   }
@@ -124,6 +162,7 @@ function CSVVisualization({
           geometryDetail={performanceSettings.geometryDetail}
         />
       ))}
+      <AnatomicalLabels />
     </group>
   );
 }

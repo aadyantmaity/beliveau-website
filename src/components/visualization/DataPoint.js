@@ -6,12 +6,12 @@ function DataPoint({ position, intensity, color, geometryDetail = 8 }) {
   const meshRef = useRef();
 
   // Only animate to reduce CPU usage
-  useFrame(() => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x += 0.01;
-      meshRef.current.rotation.y += 0.01;
-    }
-  });
+  // useFrame(() => {
+  //   if (meshRef.current) {
+  //     meshRef.current.rotation.x += 0.01;
+  //     meshRef.current.rotation.y += 0.01;
+  //   }
+  // });
 
   return (
     <group position={position}>
