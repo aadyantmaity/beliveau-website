@@ -1,5 +1,4 @@
 import React, { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
 
 // Optimized Point component for individual data points (for small datasets)
 function DataPoint({ position, intensity, color, geometryDetail = 8 }) {
