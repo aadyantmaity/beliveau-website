@@ -21,10 +21,27 @@ function InstancedPoints({
     for (let i = 0; i < data.length; i++) {
       const color = new THREE.Color();
       const intensity = data[i].normalizedIntensity;
+      const fucciClass = data[i].FUCCI_Class;
+
       if (colorMode === "intensity") {
         color.setHSL(intensity, 0.8, 0.5);
+      } else if (colorMode === "cellState") {
+        // Color based on FUCCI_Class
+        switch (fucciClass) {
+          case "FUCCI-Green+":
+            color.setHSL(0.33, 1.0, 0.7); // Brighter Green
+            break;
+          case "FUCCI-Red+":
+            color.setHSL(0.0, 1.0, 0.7); // Brighter Red
+            break;
+          case "FUCCI-Negative":
+            color.setHSL(0, 0, 0.5); // Gray
+            break;
+          default:
+            color.setHSL(0, 0, 0.5); // Default gray
+        }
       } else {
-        color.setHSL(0, 0, 0.8); // Gray/white color
+        color.setHSL(0.6, 0.8, 0.7); // Blue color for uniform mode
       }
       colorsArray[i] = color;
     }

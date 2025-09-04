@@ -8,23 +8,18 @@ const HeaderTabNavigation = () => {
   const tabs = [
     {
       id: "5k",
-      name: "5K Dataset",
-      path: "/5k",
+      name: "5K Points",
+      path: "/",
+    },
+    {
+      id: "25k",
+      name: "25K Points",
+      path: "/25k",
     },
     {
       id: "50k",
-      name: "50K Dataset",
+      name: "50K Points",
       path: "/50k",
-    },
-    {
-      id: "500k",
-      name: "500K Dataset",
-      path: "/500k",
-    },
-    {
-      id: "all-features",
-      name: "50K All Features",
-      path: "/all-features",
     },
   ];
 

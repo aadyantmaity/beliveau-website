@@ -7,39 +7,30 @@ import CSVVisualization from "./visualization/CSVVisualization";
 
 // Import sidebar components
 import SidebarHeader from "./sidebar/SidebarHeader";
-import ColorModeSection from "./sidebar/ColorModeSection";
-import IntensityChannelSection from "./sidebar/IntensityChannelSection";
-import IntensityFilterSection from "./sidebar/IntensityFilterSection";
-import MagnitudeFilterSection from "./sidebar/MagnitudeFilterSection";
-import CosineFilterSection from "./sidebar/CosineFilterSection";
+import CellStateFilterSection from "./sidebar/CellStateFilterSection";
+import AnatomyScoreFilterSection from "./sidebar/AnatomyScoreFilterSection";
+import ShapeModeFilterSection from "./sidebar/ShapeModeFilterSection";
+import SomiteFilterSection from "./sidebar/SomiteFilterSection";
 import InfoSection from "./sidebar/InfoSection";
 
-import { loadAllFeaturesDataFromFirebase } from "../utils/dataLoader";
+// Import utilities
 import {
-  filterDataByMagnitude,
-  filterDataByCosine,
-  filterDataByIntensity,
+  loadUpdatedFiltersDataFromFirebase,
+  sampleData,
+} from "../utils/dataLoader";
+import {
+  filterDataByCellState,
+  filterDataByAnatomyScore,
+  filterDataByPC,
+  filterDataByPCmpId,
+  filterDataBySomiteStage,
+  filterDataBySomiteId,
   clearPercentileCache,
 } from "../utils/dataFilter";
 
-// Load all-features data from Firebase Storage
-const loadAllFeaturesData = async () => {
-  try {
-    const parsedData = await loadAllFeaturesDataFromFirebase(
-      "sampled_50000_observations_with_all_feats_minus_SHE.csv"
-    );
-    return parsedData;
-  } catch (error) {
-    console.error("Error loading all-features data from Firebase:", error);
-    throw error;
-  }
-};
-
 // Main component
-function AllFeaturesVisualizer() {
+function SampledFiltersVisualizer({ sampleSize = 5000 }) {
   const [data, setData] = useState([]);
-  const [colorMode, setColorMode] = useState("intensity");
-  const [intensityChannel, setIntensityChannel] = useState("channel_2");
   const [loading, setLoading] = useState(true);
   const [filtering, setFiltering] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -50,24 +41,53 @@ function AllFeaturesVisualizer() {
     y: 0,
   });
 
-  // Magnitude filter state
-  const [selectedMagnitudes, setSelectedMagnitudes] = useState([]);
-  const [magnitudePercentiles, setMagnitudePercentiles] = useState({
-    major: "all",
-    intermediate: "all",
-    minor: "all",
+  // Cell state filter state
+  const [selectedCellStates, setSelectedCellStates] = useState([]);
+
+  // Anatomy score filter state
+  const [selectedAnatomyScores, setSelectedAnatomyScores] = useState([]);
+  const [anatomyScorePercentiles, setAnatomyScorePercentiles] = useState({
+    Anterior_Posterior: "all",
+    Dorsal_Ventral_Score: "all",
+    Left_Right_Score: "all",
   });
 
-  // Cosine filter state
-  const [selectedCosines, setSelectedCosines] = useState([]);
-  const [cosinePercentiles, setCosinePercentiles] = useState({
-    major: "all",
-    intermediate: "all",
-    minor: "all",
+  // Shape mode filter state
+  const [selectedPCs, setSelectedPCs] = useState([]);
+  const [selectedPCmpIds, setSelectedPCmpIds] = useState([]);
+  const [pcPercentiles, setPcPercentiles] = useState({
+    PC1: "all",
+    PC2: "all",
+    PC3: "all",
+    PC4: "all",
+    PC5: "all",
+    PC6: "all",
+    PC7: "all",
+    PC8: "all",
+  });
+  const [pcmpIdPercentiles, setPcmpIdPercentiles] = useState({
+    PC1_mpId: "all",
+    PC2_mpId: "all",
+    PC3_mpId: "all",
+    PC4_mpId: "all",
+    PC5_mpId: "all",
+    PC6_mpId: "all",
+    PC7_mpId: "all",
+    PC8_mpId: "all",
   });
 
-  // Intensity filter state
-  const [intensityFilter, setIntensityFilter] = useState("all");
+  // Somite filter state
+  const [selectedSomiteStages, setSelectedSomiteStages] = useState([]);
+  const [selectedSomiteIds, setSelectedSomiteIds] = useState([]);
+  const [somiteStagePercentiles, setSomiteStagePercentiles] = useState({
+    somite_stage: "all",
+  });
+  const [somiteIdPercentiles, setSomiteIdPercentiles] = useState({
+    Somite_ID: "all",
+  });
+
+  // Color mode state
+  const [colorMode] = useState("cellState");
 
   // Tooltip helper functions
   const showTooltip = (text, event) => {
@@ -86,22 +106,28 @@ function AllFeaturesVisualizer() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const parsedData = await loadAllFeaturesData();
-      setData(parsedData);
+      const fullData = await loadUpdatedFiltersDataFromFirebase(
+        "306_data_subset.csv"
+      );
+
+      // Sample the data based on the sampleSize prop
+      const sampledData = sampleData(fullData, sampleSize);
+      setData(sampledData);
+
       // Clear percentile cache when new data is loaded
       clearPercentileCache();
       setTimeout(() => setLoading(false), 200);
     } catch (error) {
-      console.error("Error loading all-features data:", error);
+      console.error("Error loading sampled filters data:", error);
       setTimeout(() => setLoading(false), 200);
     }
-  }, []);
+  }, [sampleSize]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  // Filter data based on magnitude and cosine filters
+  // Filter data based on all filters
   const [filteredData, setFilteredData] = useState([]);
 
   useEffect(() => {
@@ -110,36 +136,71 @@ function AllFeaturesVisualizer() {
       return;
     }
 
+    // Skip all filtering if no filters are applied
+    const hasActiveFilters =
+      selectedCellStates.length > 0 ||
+      selectedAnatomyScores.length > 0 ||
+      selectedPCs.length > 0 ||
+      selectedPCmpIds.length > 0 ||
+      selectedSomiteStages.length > 0 ||
+      selectedSomiteIds.length > 0;
+
+    if (!hasActiveFilters) {
+      setFilteredData(data); // Use original data directly
+      setFiltering(false);
+      return;
+    }
+
+    // Only run filtering if filters are active
     setFiltering(true);
 
     // Use requestAnimationFrame to prevent blocking the UI
     const filterData = () => {
       let filtered = data;
 
-      // Apply magnitude filters
-      if (selectedMagnitudes.length > 0) {
-        filtered = filterDataByMagnitude(
+      // Apply cell state filters
+      if (selectedCellStates.length > 0) {
+        filtered = filterDataByCellState(filtered, selectedCellStates);
+      }
+
+      // Apply anatomy score filters
+      if (selectedAnatomyScores.length > 0) {
+        filtered = filterDataByAnatomyScore(
           filtered,
-          selectedMagnitudes,
-          magnitudePercentiles
+          selectedAnatomyScores,
+          anatomyScorePercentiles
         );
       }
 
-      // Apply cosine filters
-      if (selectedCosines.length > 0) {
-        filtered = filterDataByCosine(
+      // Apply PC filters
+      if (selectedPCs.length > 0) {
+        filtered = filterDataByPC(filtered, selectedPCs, pcPercentiles);
+      }
+
+      // Apply PC mpId filters
+      if (selectedPCmpIds.length > 0) {
+        filtered = filterDataByPCmpId(
           filtered,
-          selectedCosines,
-          cosinePercentiles
+          selectedPCmpIds,
+          pcmpIdPercentiles
         );
       }
 
-      // Apply intensity filter
-      if (intensityFilter !== "all") {
-        filtered = filterDataByIntensity(
+      // Apply somite stage filters
+      if (selectedSomiteStages.length > 0) {
+        filtered = filterDataBySomiteStage(
           filtered,
-          intensityFilter,
-          intensityChannel
+          selectedSomiteStages,
+          somiteStagePercentiles
+        );
+      }
+
+      // Apply somite ID filters
+      if (selectedSomiteIds.length > 0) {
+        filtered = filterDataBySomiteId(
+          filtered,
+          selectedSomiteIds,
+          somiteIdPercentiles
         );
       }
 
@@ -151,12 +212,17 @@ function AllFeaturesVisualizer() {
     requestAnimationFrame(filterData);
   }, [
     data,
-    selectedMagnitudes,
-    magnitudePercentiles,
-    selectedCosines,
-    cosinePercentiles,
-    intensityFilter,
-    intensityChannel,
+    selectedCellStates,
+    selectedAnatomyScores,
+    anatomyScorePercentiles,
+    selectedPCs,
+    pcPercentiles,
+    selectedPCmpIds,
+    pcmpIdPercentiles,
+    selectedSomiteStages,
+    somiteStagePercentiles,
+    selectedSomiteIds,
+    somiteIdPercentiles,
   ]);
 
   if (loading) {
@@ -258,57 +324,59 @@ function AllFeaturesVisualizer() {
             }}
             className="sidebar-scroll"
           >
-            <ColorModeSection
-              colorMode={colorMode}
-              setColorMode={setColorMode}
+            <CellStateFilterSection
+              selectedCellStates={selectedCellStates}
+              setSelectedCellStates={setSelectedCellStates}
               sidebarCollapsed={sidebarCollapsed}
               showTooltip={showTooltip}
               hideTooltip={hideTooltip}
             />
 
-            <IntensityChannelSection
-              intensityChannel={intensityChannel}
-              setIntensityChannel={setIntensityChannel}
+            <AnatomyScoreFilterSection
+              selectedAnatomyScores={selectedAnatomyScores}
+              setSelectedAnatomyScores={setSelectedAnatomyScores}
+              anatomyScorePercentiles={anatomyScorePercentiles}
+              setAnatomyScorePercentiles={setAnatomyScorePercentiles}
               sidebarCollapsed={sidebarCollapsed}
               showTooltip={showTooltip}
               hideTooltip={hideTooltip}
             />
 
-            <IntensityFilterSection
-              intensityFilter={intensityFilter}
-              setIntensityFilter={setIntensityFilter}
+            <ShapeModeFilterSection
+              selectedPCs={selectedPCs}
+              setSelectedPCs={setSelectedPCs}
+              selectedPCmpIds={selectedPCmpIds}
+              setSelectedPCmpIds={setSelectedPCmpIds}
+              pcPercentiles={pcPercentiles}
+              setPcPercentiles={setPcPercentiles}
+              pcmpIdPercentiles={pcmpIdPercentiles}
+              setPcmpIdPercentiles={setPcmpIdPercentiles}
               sidebarCollapsed={sidebarCollapsed}
               showTooltip={showTooltip}
               hideTooltip={hideTooltip}
             />
 
-            <MagnitudeFilterSection
-              selectedMagnitudes={selectedMagnitudes}
-              setSelectedMagnitudes={setSelectedMagnitudes}
-              magnitudePercentiles={magnitudePercentiles}
-              setMagnitudePercentiles={setMagnitudePercentiles}
-              sidebarCollapsed={sidebarCollapsed}
-              showTooltip={showTooltip}
-              hideTooltip={hideTooltip}
-            />
-
-            <CosineFilterSection
-              selectedCosines={selectedCosines}
-              setSelectedCosines={setSelectedCosines}
-              cosinePercentiles={cosinePercentiles}
-              setCosinePercentiles={setCosinePercentiles}
+            <SomiteFilterSection
+              selectedSomiteStages={selectedSomiteStages}
+              setSelectedSomiteStages={setSelectedSomiteStages}
+              selectedSomiteIds={selectedSomiteIds}
+              setSelectedSomiteIds={setSelectedSomiteIds}
+              somiteStagePercentiles={somiteStagePercentiles}
+              setSomiteStagePercentiles={setSomiteStagePercentiles}
+              somiteIdPercentiles={somiteIdPercentiles}
+              setSomiteIdPercentiles={setSomiteIdPercentiles}
               sidebarCollapsed={sidebarCollapsed}
               showTooltip={showTooltip}
               hideTooltip={hideTooltip}
             />
 
             <InfoSection
-              datasetName="50K All Features Dataset"
+              datasetName={`${(sampleSize / 1000).toFixed(0)}K Dataset`}
               filteredData={filteredData}
               data={data}
-              intensityFilter={intensityFilter}
-              selectedMagnitudes={selectedMagnitudes}
-              selectedCosines={selectedCosines}
+              intensityFilter="all"
+              selectedMagnitudes={[]}
+              selectedCosines={[]}
               sidebarCollapsed={sidebarCollapsed}
               filtering={filtering}
             />
@@ -329,7 +397,7 @@ function AllFeaturesVisualizer() {
           data={filteredData}
           colorMode={colorMode}
           performanceMode="auto"
-          intensityChannel={intensityChannel}
+          intensityChannel="channel_2"
         />
 
         <OrbitControls
@@ -346,4 +414,4 @@ function AllFeaturesVisualizer() {
   );
 }
 
-export default AllFeaturesVisualizer;
+export default SampledFiltersVisualizer;

@@ -1,7 +1,6 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import CSV3DVisualizer from "./CSV3DVisualizerRefactored";
-import AllFeaturesVisualizer from "./AllFeaturesVisualizer";
+import SampledFiltersVisualizer from "./SampledFiltersVisualizer";
 import "./TabSystem.css";
 
 // Main Tab System Component
@@ -11,21 +10,16 @@ function TabSystem() {
       <div className="tab-content">
         <Routes>
           <Route
-            path="/5k"
-            element={<CSV3DVisualizer datasetId="sampled_5000_observations" />}
+            path="/"
+            element={<SampledFiltersVisualizer sampleSize={5000} />}
+          />
+          <Route
+            path="/25k"
+            element={<SampledFiltersVisualizer sampleSize={25000} />}
           />
           <Route
             path="/50k"
-            element={<CSV3DVisualizer datasetId="sampled_50000" />}
-          />
-          <Route
-            path="/500k"
-            element={<CSV3DVisualizer datasetId="sampled_500000" />}
-          />
-          <Route path="/all-features" element={<AllFeaturesVisualizer />} />
-          <Route
-            path="/"
-            element={<CSV3DVisualizer datasetId="sampled_5000_observations" />}
+            element={<SampledFiltersVisualizer sampleSize={50000} />}
           />
         </Routes>
       </div>

@@ -1,7 +1,7 @@
 import React from "react";
 import { Question } from "@phosphor-icons/react";
 
-function ControlSection({
+export function ControlSection({
   title,
   icon: Icon,
   tooltip,
@@ -25,7 +25,7 @@ function ControlSection({
           opacity: "0.9",
         }}
       >
-        <Icon size={14} />
+        {Icon && <Icon size={14} />}
         {title}
         {tooltip && (
           <Question

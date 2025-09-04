@@ -22,119 +22,51 @@ const getPercentiles = (data, field) => {
   return percentiles;
 };
 
-// Filter data based on intensity values
-export const filterDataByIntensity = (
-  data,
-  intensityFilter,
-  intensityChannel
-) => {
-  if (intensityFilter === "all") return data;
+// Filter data by cell state (FUCCI class)
+export const filterDataByCellState = (data, selectedCellStates) => {
+  if (selectedCellStates.length === 0) return data;
 
-  // Get the appropriate intensity values based on selected channel
-  const getIntensityValue = (point) => {
-    switch (intensityChannel) {
-      case "channel_0":
-        return point.mean_intensity_0;
-      case "channel_1":
-        return point.mean_intensity_1;
-      case "channel_2":
-      default:
-        return point.mean_intensity_2;
-    }
-  };
-
-  const intensityValues = data.map(getIntensityValue);
-  const minIntensity = Math.min(...intensityValues);
-  const maxIntensity = Math.max(...intensityValues);
-  const range = maxIntensity - minIntensity;
-
-  let filterFunction;
-  switch (intensityFilter) {
-    case "low":
-      filterFunction = (point) =>
-        getIntensityValue(point) <= minIntensity + range * 0.33;
-      break;
-    case "medium":
-      filterFunction = (point) =>
-        getIntensityValue(point) > minIntensity + range * 0.33 &&
-        getIntensityValue(point) <= minIntensity + range * 0.66;
-      break;
-    case "high":
-      filterFunction = (point) =>
-        getIntensityValue(point) > minIntensity + range * 0.66;
-      break;
-    default:
-      return data;
-  }
-
-  return data.filter(filterFunction);
+  return data.filter((point) => {
+    return selectedCellStates.includes(point.FUCCI_Class);
+  });
 };
 
-// Filter data by magnitude values with percentile ranges
-export const filterDataByMagnitude = (
+// Filter data by anatomy score values with percentile ranges
+export const filterDataByAnatomyScore = (
   data,
-  selectedMagnitudes,
-  magnitudePercentiles
+  selectedAnatomyScores,
+  anatomyScorePercentiles
 ) => {
-  if (selectedMagnitudes.length === 0) return data;
+  if (selectedAnatomyScores.length === 0) return data;
 
-  // Pre-calculate percentiles for all selected magnitude types
-  const magnitudePercentileValues = {};
-  selectedMagnitudes.forEach((magnitudeType) => {
-    const percentile = magnitudePercentiles[magnitudeType];
+  // Pre-calculate percentiles for all selected anatomy score types
+  const anatomyScorePercentileValues = {};
+  selectedAnatomyScores.forEach((scoreType) => {
+    const percentile = anatomyScorePercentiles[scoreType];
     if (percentile !== "all") {
-      let field;
-      switch (magnitudeType) {
-        case "major":
-          field = "major_magnitude";
-          break;
-        case "intermediate":
-          field = "intermediate_magnitude";
-          break;
-        case "minor":
-          field = "minor_magnitude";
-          break;
-        default:
-          return;
-      }
-      magnitudePercentileValues[magnitudeType] = getPercentiles(data, field);
+      anatomyScorePercentileValues[scoreType] = getPercentiles(data, scoreType);
     }
   });
 
   return data.filter((point) => {
-    return selectedMagnitudes.every((magnitudeType) => {
-      const percentile = magnitudePercentiles[magnitudeType];
+    return selectedAnatomyScores.every((scoreType) => {
+      const percentile = anatomyScorePercentiles[scoreType];
       if (percentile === "all") return true;
 
-      // Get the magnitude value for this point
-      let magnitudeValue;
-      switch (magnitudeType) {
-        case "major":
-          magnitudeValue = point.major_magnitude;
-          break;
-        case "intermediate":
-          magnitudeValue = point.intermediate_magnitude;
-          break;
-        case "minor":
-          magnitudeValue = point.minor_magnitude;
-          break;
-        default:
-          return true;
-      }
-
-      if (magnitudeValue === undefined || magnitudeValue === null) return false;
+      const scoreValue = point[scoreType];
+      if (scoreValue === undefined || scoreValue === null) return false;
 
       // Use pre-calculated percentiles
-      const { p33, p66 } = magnitudePercentileValues[magnitudeType];
+      const { p33, p66 } = anatomyScorePercentileValues[scoreType];
 
       // Apply percentile filter
       switch (percentile) {
         case "low":
-          return magnitudeValue <= p33;
+          return scoreValue <= p33;
         case "medium":
-          return magnitudeValue > p33 && magnitudeValue <= p66;
+          return scoreValue > p33 && scoreValue <= p66;
         case "high":
-          return magnitudeValue > p66;
+          return scoreValue > p66;
         default:
           return true;
       }
@@ -142,82 +74,167 @@ export const filterDataByMagnitude = (
   });
 };
 
-// Filter data by cosine values with percentile ranges
-export const filterDataByCosine = (
-  data,
-  selectedCosines,
-  cosinePercentiles
-) => {
-  if (selectedCosines.length === 0) return data;
+// Filter data by PC values with percentile ranges
+export const filterDataByPC = (data, selectedPCs, pcPercentiles) => {
+  if (selectedPCs.length === 0) return data;
 
-  // Pre-calculate percentiles for all selected cosine types (using absolute values)
-  const cosinePercentileValues = {};
-  selectedCosines.forEach((cosineType) => {
-    const percentile = cosinePercentiles[cosineType];
+  // Pre-calculate percentiles for all selected PC types
+  const pcPercentileValues = {};
+  selectedPCs.forEach((pcType) => {
+    const percentile = pcPercentiles[pcType];
     if (percentile !== "all") {
-      let field;
-      switch (cosineType) {
-        case "major":
-          field = "cos_major";
-          break;
-        case "intermediate":
-          field = "cos_intermediate";
-          break;
-        case "minor":
-          field = "cos_minor";
-          break;
-        default:
-          return;
-      }
-      // Calculate percentiles using absolute values
-      const absoluteValues = data
-        .map((point) => Math.abs(point[field]))
-        .filter((val) => !isNaN(val));
-      cosinePercentileValues[cosineType] = {
-        p33: absoluteValues.sort((a, b) => a - b)[
-          Math.floor(absoluteValues.length * 0.33)
-        ],
-        p66: absoluteValues.sort((a, b) => a - b)[
-          Math.floor(absoluteValues.length * 0.66)
-        ],
-      };
+      pcPercentileValues[pcType] = getPercentiles(data, pcType);
     }
   });
 
   return data.filter((point) => {
-    return selectedCosines.every((cosineType) => {
-      const percentile = cosinePercentiles[cosineType];
+    return selectedPCs.every((pcType) => {
+      const percentile = pcPercentiles[pcType];
       if (percentile === "all") return true;
 
-      // Get the cosine value for this point and take absolute value
-      let cosineValue;
-      switch (cosineType) {
-        case "major":
-          cosineValue = Math.abs(point.cos_major);
-          break;
-        case "intermediate":
-          cosineValue = Math.abs(point.cos_intermediate);
-          break;
-        case "minor":
-          cosineValue = Math.abs(point.cos_minor);
-          break;
-        default:
-          return true;
-      }
-
-      if (cosineValue === undefined || cosineValue === null) return false;
+      const pcValue = point[pcType];
+      if (pcValue === undefined || pcValue === null) return false;
 
       // Use pre-calculated percentiles
-      const { p33, p66 } = cosinePercentileValues[cosineType];
+      const { p33, p66 } = pcPercentileValues[pcType];
 
       // Apply percentile filter
       switch (percentile) {
         case "low":
-          return cosineValue <= p33;
+          return pcValue <= p33;
         case "medium":
-          return cosineValue > p33 && cosineValue <= p66;
+          return pcValue > p33 && pcValue <= p66;
         case "high":
-          return cosineValue > p66;
+          return pcValue > p66;
+        default:
+          return true;
+      }
+    });
+  });
+};
+
+// Filter data by PC mpId values with percentile ranges
+export const filterDataByPCmpId = (
+  data,
+  selectedPCmpIds,
+  pcmpIdPercentiles
+) => {
+  if (selectedPCmpIds.length === 0) return data;
+
+  // Pre-calculate percentiles for all selected PC mpId types
+  const pcmpIdPercentileValues = {};
+  selectedPCmpIds.forEach((pcmpIdType) => {
+    const percentile = pcmpIdPercentiles[pcmpIdType];
+    if (percentile !== "all") {
+      pcmpIdPercentileValues[pcmpIdType] = getPercentiles(data, pcmpIdType);
+    }
+  });
+
+  return data.filter((point) => {
+    return selectedPCmpIds.every((pcmpIdType) => {
+      const percentile = pcmpIdPercentiles[pcmpIdType];
+      if (percentile === "all") return true;
+
+      const pcmpIdValue = point[pcmpIdType];
+      if (pcmpIdValue === undefined || pcmpIdValue === null) return false;
+
+      // Use pre-calculated percentiles
+      const { p33, p66 } = pcmpIdPercentileValues[pcmpIdType];
+
+      // Apply percentile filter
+      switch (percentile) {
+        case "low":
+          return pcmpIdValue <= p33;
+        case "medium":
+          return pcmpIdValue > p33 && pcmpIdValue <= p66;
+        case "high":
+          return pcmpIdValue > p66;
+        default:
+          return true;
+      }
+    });
+  });
+};
+
+// Filter data by somite stage values with percentile ranges
+export const filterDataBySomiteStage = (
+  data,
+  selectedSomiteStages,
+  somiteStagePercentiles
+) => {
+  if (selectedSomiteStages.length === 0) return data;
+
+  // Pre-calculate percentiles for all selected somite stage types
+  const somiteStagePercentileValues = {};
+  selectedSomiteStages.forEach((stageType) => {
+    const percentile = somiteStagePercentiles[stageType];
+    if (percentile !== "all") {
+      somiteStagePercentileValues[stageType] = getPercentiles(data, stageType);
+    }
+  });
+
+  return data.filter((point) => {
+    return selectedSomiteStages.every((stageType) => {
+      const percentile = somiteStagePercentiles[stageType];
+      if (percentile === "all") return true;
+
+      const stageValue = point[stageType];
+      if (stageValue === undefined || stageValue === null) return false;
+
+      // Use pre-calculated percentiles
+      const { p33, p66 } = somiteStagePercentileValues[stageType];
+
+      // Apply percentile filter
+      switch (percentile) {
+        case "low":
+          return stageValue <= p33;
+        case "medium":
+          return stageValue > p33 && stageValue <= p66;
+        case "high":
+          return stageValue > p66;
+        default:
+          return true;
+      }
+    });
+  });
+};
+
+// Filter data by somite ID values with percentile ranges
+export const filterDataBySomiteId = (
+  data,
+  selectedSomiteIds,
+  somiteIdPercentiles
+) => {
+  if (selectedSomiteIds.length === 0) return data;
+
+  // Pre-calculate percentiles for all selected somite ID types
+  const somiteIdPercentileValues = {};
+  selectedSomiteIds.forEach((idType) => {
+    const percentile = somiteIdPercentiles[idType];
+    if (percentile !== "all") {
+      somiteIdPercentileValues[idType] = getPercentiles(data, idType);
+    }
+  });
+
+  return data.filter((point) => {
+    return selectedSomiteIds.every((idType) => {
+      const percentile = somiteIdPercentiles[idType];
+      if (percentile === "all") return true;
+
+      const idValue = point[idType];
+      if (idValue === undefined || idValue === null) return false;
+
+      // Use pre-calculated percentiles
+      const { p33, p66 } = somiteIdPercentileValues[idType];
+
+      // Apply percentile filter
+      switch (percentile) {
+        case "low":
+          return idValue <= p33;
+        case "medium":
+          return idValue > p33 && idValue <= p66;
+        case "high":
+          return idValue > p66;
         default:
           return true;
       }

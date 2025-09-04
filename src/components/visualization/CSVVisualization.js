@@ -1,46 +1,12 @@
 import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
-import { Text } from "@react-three/drei";
 import DataPoint from "./DataPoint";
 import InstancedPoints from "./InstancedPoints";
-
-// Anatomical labels component for 3D space orientation
-function AnatomicalLabels() {
-  return (
-    <group>
-      {/* Anterior label - positioned in front of the data */}
-      <Text
-        position={[15, 0, 0]}
-        fontSize={1.2}
-        color="#ffffff"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.1}
-        outlineColor="#000000"
-      >
-        ANTERIOR
-      </Text>
-
-      {/* Posterior label - positioned behind the data */}
-      <Text
-        position={[-15, 0, 0]}
-        fontSize={1.2}
-        color="#ffffff"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.1}
-        outlineColor="#000000"
-      >
-        POSTERIOR
-      </Text>
-    </group>
-  );
-}
 
 // Main visualization component
 function CSVVisualization({
   data,
-  colorMode,
+  colorMode = "intensity", // Default to intensity mode
   performanceMode,
   intensityChannel,
 }) {
@@ -126,12 +92,26 @@ function CSVVisualization({
     [data, intensityChannel]
   );
 
-  const getColor = (intensity, mode) => {
+  const getColor = (intensity, mode, fucciClass) => {
     switch (mode) {
       case "intensity":
         return new THREE.Color().setHSL(intensity, 0.8, 0.5);
+      case "uniform":
+        return new THREE.Color().setHSL(0.6, 0.8, 0.7); // Blue color for uniform mode
+      case "cellState":
+        // Color based on FUCCI_Class
+        switch (fucciClass) {
+          case "FUCCI-Green+":
+            return new THREE.Color().setHSL(0.33, 1.0, 0.7); // Brighter Green
+          case "FUCCI-Red+":
+            return new THREE.Color().setHSL(0.0, 1.0, 0.7); // Brighter Red
+          case "FUCCI-Negative":
+            return new THREE.Color().setHSL(0, 0, 0.5); // Gray
+          default:
+            return new THREE.Color().setHSL(0, 0, 0.5); // Default gray
+        }
       default:
-        return new THREE.Color().setHSL(0, 0, 0.8); // Gray/white color
+        return new THREE.Color().setHSL(0.6, 0.8, 0.7); // Default blue color
     }
   };
 
@@ -145,7 +125,6 @@ function CSVVisualization({
           performanceMode={performanceMode}
           intensityChannel={intensityChannel}
         />
-        <AnatomicalLabels />
       </group>
     );
   }
@@ -158,11 +137,14 @@ function CSVVisualization({
           key={index}
           position={[point.normalizedX, point.normalizedY, point.normalizedZ]}
           intensity={point.mean_intensity_2}
-          color={getColor(point.normalizedIntensity, colorMode)}
+          color={getColor(
+            point.normalizedIntensity,
+            colorMode,
+            point.FUCCI_Class
+          )}
           geometryDetail={performanceSettings.geometryDetail}
         />
       ))}
-      <AnatomicalLabels />
     </group>
   );
 }
