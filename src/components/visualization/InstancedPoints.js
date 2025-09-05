@@ -8,12 +8,31 @@ function InstancedPoints({
   colorMode,
   performanceMode,
   intensityChannel,
+  anatomicalMode,
+  medianValue,
+  anatomyHighlightMode,
+  anatomyMedian,
+  selectedSomiteIds = [],
 }) {
   const instancesRef = useRef();
 
   // Create geometry and material once
   const geometry = useMemo(() => new THREE.SphereGeometry(0.025, 2, 2), []);
   const material = useMemo(() => new THREE.MeshStandardMaterial(), []);
+
+  // Get anatomical value for coloring
+  const getAnatomicalValue = (row, mode) => {
+    switch (mode) {
+      case "anterior_posterior":
+        return row.Anterior_Posterior;
+      case "dorsal_ventral":
+        return row.Dorsal_Ventral_Score;
+      case "left_right":
+        return row.Left_Right_Score;
+      default:
+        return row.Anterior_Posterior;
+    }
+  };
 
   // Create colors array for all points - optimized
   const colors = useMemo(() => {
@@ -22,8 +41,104 @@ function InstancedPoints({
       const color = new THREE.Color();
       const intensity = data[i].normalizedIntensity;
       const fucciClass = data[i].FUCCI_Class;
+      const point = data[i];
+      const somiteId = point.Somite_ID;
 
-      if (colorMode === "intensity") {
+      // Check if this point's somite is selected
+      const isSomiteSelected = selectedSomiteIds.length === 0 || selectedSomiteIds.includes(somiteId);
+
+      // Handle anatomy highlighting mode
+      if (anatomyHighlightMode && anatomyHighlightMode !== "none") {
+        let anatomicalValue = 0;
+        let isAboveMedian = false;
+        
+        switch (anatomyHighlightMode) {
+          case "anterior":
+          case "posterior":
+            anatomicalValue = point.Anterior_Posterior;
+            isAboveMedian = anatomicalValue >= anatomyMedian;
+            break;
+          case "dorsal":
+          case "ventral":
+            anatomicalValue = point.Dorsal_Ventral_Score;
+            isAboveMedian = anatomicalValue >= anatomyMedian;
+            break;
+          case "left":
+          case "right":
+            anatomicalValue = point.Left_Right_Score;
+            isAboveMedian = anatomicalValue >= anatomyMedian;
+            break;
+          default:
+            anatomicalValue = point.Anterior_Posterior;
+            isAboveMedian = anatomicalValue >= anatomyMedian;
+            break;
+        }
+        
+        // Determine if this point should be highlighted
+        let shouldHighlight = false;
+        switch (anatomyHighlightMode) {
+          case "anterior":
+          case "dorsal":
+          case "left":
+            shouldHighlight = !isAboveMedian; // Below median
+            break;
+          case "posterior":
+          case "ventral":
+          case "right":
+            shouldHighlight = isAboveMedian; // Above median
+            break;
+          default:
+            shouldHighlight = !isAboveMedian; // Default to below median
+            break;
+        }
+        
+        if (shouldHighlight) {
+          // Highlighted points - use bright colors based on cell state
+          switch (fucciClass) {
+            case "FUCCI-Green+":
+              color.setHSL(0.33, 1.0, 0.7); // Bright Green
+              break;
+            case "FUCCI-Red+":
+              color.setHSL(0.0, 1.0, 0.7); // Bright Red
+              break;
+            case "FUCCI-Double+":
+              color.setHSL(0.5, 1.0, 0.7); // Bright Yellow
+              break;
+            case "FUCCI-Negative":
+              color.setHSL(0.6, 0.8, 0.7); // Bright Blue
+              break;
+            default:
+              color.setHSL(0.6, 0.8, 0.7); // Bright Blue
+          }
+        } else {
+          // Non-highlighted points - gray
+          color.setHSL(0, 0, 0.3);
+        }
+      } else if (selectedSomiteIds.length > 0) {
+        // Somite highlighting mode - color selected somites, gray out others
+        if (isSomiteSelected) {
+          // Selected somite points - use colors based on cell state
+          switch (fucciClass) {
+            case "FUCCI-Green+":
+              color.setHSL(0.33, 1.0, 0.7); // Bright Green
+              break;
+            case "FUCCI-Red+":
+              color.setHSL(0.0, 1.0, 0.7); // Bright Red
+              break;
+            case "FUCCI-Double+":
+              color.setHSL(0.5, 1.0, 0.7); // Bright Yellow
+              break;
+            case "FUCCI-Negative":
+              color.setHSL(0.6, 0.8, 0.7); // Bright Blue
+              break;
+            default:
+              color.setHSL(0.6, 0.8, 0.7); // Bright Blue
+          }
+        } else {
+          // Non-selected somite points - gray
+          color.setHSL(0, 0, 0.3);
+        }
+      } else if (colorMode === "intensity") {
         color.setHSL(intensity, 0.8, 0.5);
       } else if (colorMode === "cellState") {
         // Color based on FUCCI_Class
@@ -40,13 +155,23 @@ function InstancedPoints({
           default:
             color.setHSL(0, 0, 0.5); // Default gray
         }
+      } else if (colorMode === "anatomical") {
+        // Color based on anatomical value (50% split)
+        const anatomicalValue = getAnatomicalValue(data[i], anatomicalMode);
+        const isAboveMedian = anatomicalValue >= medianValue;
+        
+        if (isAboveMedian) {
+          color.setHSL(0.0, 0.8, 0.6); // Red for above median
+        } else {
+          color.setHSL(0.6, 0.8, 0.6); // Blue for below median
+        }
       } else {
         color.setHSL(0.6, 0.8, 0.7); // Blue color for uniform mode
       }
       colorsArray[i] = color;
     }
     return colorsArray;
-  }, [data, colorMode]);
+  }, [data, colorMode, anatomicalMode, medianValue, anatomyHighlightMode, anatomyMedian, selectedSomiteIds]);
 
   return (
     <Instances

@@ -9,8 +9,7 @@ import CSVVisualization from "./visualization/CSVVisualization";
 import SidebarHeader from "./sidebar/SidebarHeader";
 import CellStateFilterSection from "./sidebar/CellStateFilterSection";
 import AnatomyScoreFilterSection from "./sidebar/AnatomyScoreFilterSection";
-import ShapeModeFilterSection from "./sidebar/ShapeModeFilterSection";
-import SomiteFilterSection from "./sidebar/SomiteFilterSection";
+import SomiteIdFilterSection from "./sidebar/SomiteIdFilterSection";
 import InfoSection from "./sidebar/InfoSection";
 
 // Import utilities
@@ -21,10 +20,6 @@ import {
 import {
   filterDataByCellState,
   filterDataByAnatomyScore,
-  filterDataByPC,
-  filterDataByPCmpId,
-  filterDataBySomiteStage,
-  filterDataBySomiteId,
   clearPercentileCache,
 } from "../utils/dataFilter";
 
@@ -51,40 +46,10 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
     Dorsal_Ventral_Score: "all",
     Left_Right_Score: "all",
   });
+  const [anatomyHighlightMode, setAnatomyHighlightMode] = useState("none");
 
-  // Shape mode filter state
-  const [selectedPCs, setSelectedPCs] = useState([]);
-  const [selectedPCmpIds, setSelectedPCmpIds] = useState([]);
-  const [pcPercentiles, setPcPercentiles] = useState({
-    PC1: "all",
-    PC2: "all",
-    PC3: "all",
-    PC4: "all",
-    PC5: "all",
-    PC6: "all",
-    PC7: "all",
-    PC8: "all",
-  });
-  const [pcmpIdPercentiles, setPcmpIdPercentiles] = useState({
-    PC1_mpId: "all",
-    PC2_mpId: "all",
-    PC3_mpId: "all",
-    PC4_mpId: "all",
-    PC5_mpId: "all",
-    PC6_mpId: "all",
-    PC7_mpId: "all",
-    PC8_mpId: "all",
-  });
-
-  // Somite filter state
-  const [selectedSomiteStages, setSelectedSomiteStages] = useState([]);
+  // Somite ID filter state
   const [selectedSomiteIds, setSelectedSomiteIds] = useState([]);
-  const [somiteStagePercentiles, setSomiteStagePercentiles] = useState({
-    somite_stage: "all",
-  });
-  const [somiteIdPercentiles, setSomiteIdPercentiles] = useState({
-    Somite_ID: "all",
-  });
 
   // Color mode state
   const [colorMode] = useState("cellState");
@@ -107,7 +72,7 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
     try {
       setLoading(true);
       const fullData = await loadUpdatedFiltersDataFromFirebase(
-        "306_data_subset.csv"
+        "306_data_50.csv"
       );
 
       // Sample the data based on the sampleSize prop
@@ -136,14 +101,10 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
       return;
     }
 
-    // Skip all filtering if no filters are applied
+    // Skip all filtering if no filters are applied (excluding somite IDs which are used for coloring)
     const hasActiveFilters =
       selectedCellStates.length > 0 ||
-      selectedAnatomyScores.length > 0 ||
-      selectedPCs.length > 0 ||
-      selectedPCmpIds.length > 0 ||
-      selectedSomiteStages.length > 0 ||
-      selectedSomiteIds.length > 0;
+      selectedAnatomyScores.length > 0;
 
     if (!hasActiveFilters) {
       setFilteredData(data); // Use original data directly
@@ -172,37 +133,7 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
         );
       }
 
-      // Apply PC filters
-      if (selectedPCs.length > 0) {
-        filtered = filterDataByPC(filtered, selectedPCs, pcPercentiles);
-      }
-
-      // Apply PC mpId filters
-      if (selectedPCmpIds.length > 0) {
-        filtered = filterDataByPCmpId(
-          filtered,
-          selectedPCmpIds,
-          pcmpIdPercentiles
-        );
-      }
-
-      // Apply somite stage filters
-      if (selectedSomiteStages.length > 0) {
-        filtered = filterDataBySomiteStage(
-          filtered,
-          selectedSomiteStages,
-          somiteStagePercentiles
-        );
-      }
-
-      // Apply somite ID filters
-      if (selectedSomiteIds.length > 0) {
-        filtered = filterDataBySomiteId(
-          filtered,
-          selectedSomiteIds,
-          somiteIdPercentiles
-        );
-      }
+      // Note: Somite ID filtering is now handled in visualization coloring, not data filtering
 
       setFilteredData(filtered);
       setFiltering(false);
@@ -215,14 +146,7 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
     selectedCellStates,
     selectedAnatomyScores,
     anatomyScorePercentiles,
-    selectedPCs,
-    pcPercentiles,
-    selectedPCmpIds,
-    pcmpIdPercentiles,
-    selectedSomiteStages,
-    somiteStagePercentiles,
     selectedSomiteIds,
-    somiteIdPercentiles,
   ]);
 
   if (loading) {
@@ -337,34 +261,16 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
               setSelectedAnatomyScores={setSelectedAnatomyScores}
               anatomyScorePercentiles={anatomyScorePercentiles}
               setAnatomyScorePercentiles={setAnatomyScorePercentiles}
+              anatomyHighlightMode={anatomyHighlightMode}
+              setAnatomyHighlightMode={setAnatomyHighlightMode}
               sidebarCollapsed={sidebarCollapsed}
               showTooltip={showTooltip}
               hideTooltip={hideTooltip}
             />
 
-            <ShapeModeFilterSection
-              selectedPCs={selectedPCs}
-              setSelectedPCs={setSelectedPCs}
-              selectedPCmpIds={selectedPCmpIds}
-              setSelectedPCmpIds={setSelectedPCmpIds}
-              pcPercentiles={pcPercentiles}
-              setPcPercentiles={setPcPercentiles}
-              pcmpIdPercentiles={pcmpIdPercentiles}
-              setPcmpIdPercentiles={setPcmpIdPercentiles}
-              sidebarCollapsed={sidebarCollapsed}
-              showTooltip={showTooltip}
-              hideTooltip={hideTooltip}
-            />
-
-            <SomiteFilterSection
-              selectedSomiteStages={selectedSomiteStages}
-              setSelectedSomiteStages={setSelectedSomiteStages}
+            <SomiteIdFilterSection
               selectedSomiteIds={selectedSomiteIds}
               setSelectedSomiteIds={setSelectedSomiteIds}
-              somiteStagePercentiles={somiteStagePercentiles}
-              setSomiteStagePercentiles={setSomiteStagePercentiles}
-              somiteIdPercentiles={somiteIdPercentiles}
-              setSomiteIdPercentiles={setSomiteIdPercentiles}
               sidebarCollapsed={sidebarCollapsed}
               showTooltip={showTooltip}
               hideTooltip={hideTooltip}
@@ -398,6 +304,8 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
           colorMode={colorMode}
           performanceMode="auto"
           intensityChannel="channel_2"
+          anatomyHighlightMode={anatomyHighlightMode}
+          selectedSomiteIds={selectedSomiteIds}
         />
 
         <OrbitControls
