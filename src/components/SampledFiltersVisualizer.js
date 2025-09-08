@@ -10,6 +10,7 @@ import SidebarHeader from "./sidebar/SidebarHeader";
 import CellStateFilterSection from "./sidebar/CellStateFilterSection";
 import AnatomyScoreFilterSection from "./sidebar/AnatomyScoreFilterSection";
 import SomiteIdFilterSection from "./sidebar/SomiteIdFilterSection";
+import SomiteStageFilterSection from "./sidebar/SomiteStageFilterSection";
 import InfoSection from "./sidebar/InfoSection";
 
 // Import utilities
@@ -20,6 +21,8 @@ import {
 import {
   filterDataByCellState,
   filterDataByAnatomyScore,
+  filterDataBySomiteId,
+  filterDataBySomiteStage,
   clearPercentileCache,
 } from "../utils/dataFilter";
 
@@ -50,6 +53,9 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
 
   // Somite ID filter state
   const [selectedSomiteIds, setSelectedSomiteIds] = useState([]);
+
+  // Somite stage filter state
+  const [selectedSomiteStages, setSelectedSomiteStages] = useState([]);
 
   // Color mode state
   const [colorMode] = useState("cellState");
@@ -101,10 +107,9 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
       return;
     }
 
-    // Skip all filtering if no filters are applied (excluding somite IDs which are used for coloring)
+    // Skip all filtering if no filters are applied (excluding somite IDs and somite stages which are used for coloring)
     const hasActiveFilters =
-      selectedCellStates.length > 0 ||
-      selectedAnatomyScores.length > 0;
+      selectedCellStates.length > 0 || selectedAnatomyScores.length > 0;
 
     if (!hasActiveFilters) {
       setFilteredData(data); // Use original data directly
@@ -133,7 +138,7 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
         );
       }
 
-      // Note: Somite ID filtering is now handled in visualization coloring, not data filtering
+      // Note: Somite ID and Somite Stage filtering are now handled in visualization coloring, not data filtering
 
       setFilteredData(filtered);
       setFiltering(false);
@@ -271,6 +276,16 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
             <SomiteIdFilterSection
               selectedSomiteIds={selectedSomiteIds}
               setSelectedSomiteIds={setSelectedSomiteIds}
+              selectedSomiteStages={selectedSomiteStages}
+              sidebarCollapsed={sidebarCollapsed}
+              showTooltip={showTooltip}
+              hideTooltip={hideTooltip}
+            />
+
+            <SomiteStageFilterSection
+              selectedSomiteStages={selectedSomiteStages}
+              setSelectedSomiteStages={setSelectedSomiteStages}
+              selectedSomiteIds={selectedSomiteIds}
               sidebarCollapsed={sidebarCollapsed}
               showTooltip={showTooltip}
               hideTooltip={hideTooltip}
@@ -306,6 +321,7 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
           intensityChannel="channel_2"
           anatomyHighlightMode={anatomyHighlightMode}
           selectedSomiteIds={selectedSomiteIds}
+          selectedSomiteStages={selectedSomiteStages}
         />
 
         <OrbitControls

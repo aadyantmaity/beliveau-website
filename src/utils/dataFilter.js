@@ -83,6 +83,15 @@ export const filterDataBySomiteId = (data, selectedSomiteIds) => {
   });
 };
 
+// Filter data by somite stage
+export const filterDataBySomiteStage = (data, selectedSomiteStages) => {
+  if (selectedSomiteStages.length === 0) return data;
+
+  return data.filter((point) => {
+    return selectedSomiteStages.includes(point.somite_stage);
+  });
+};
+
 // Clear cache when data changes significantly
 export const clearPercentileCache = () => {
   percentileCache.clear();

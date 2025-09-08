@@ -11,6 +11,7 @@ function CSVVisualization({
   intensityChannel,
   anatomyHighlightMode = "none",
   selectedSomiteIds = [],
+  selectedSomiteStages = [],
 }) {
   const groupRef = useRef();
 
@@ -97,29 +98,29 @@ function CSVVisualization({
   // Calculate median for anatomy highlighting
   const getAnatomyMedian = (data, mode) => {
     if (data.length === 0) return 0;
-    
+
     let values = [];
     switch (mode) {
       case "anterior":
       case "posterior":
-        values = data.map(row => row.Anterior_Posterior);
+        values = data.map((row) => row.Anterior_Posterior);
         break;
       case "dorsal":
       case "ventral":
-        values = data.map(row => row.Dorsal_Ventral_Score);
+        values = data.map((row) => row.Dorsal_Ventral_Score);
         break;
       case "left":
       case "right":
-        values = data.map(row => row.Left_Right_Score);
+        values = data.map((row) => row.Left_Right_Score);
         break;
       default:
         return 0;
     }
-    
+
     const sortedValues = values.sort((a, b) => a - b);
     const mid = Math.floor(sortedValues.length / 2);
-    return sortedValues.length % 2 === 0 
-      ? (sortedValues[mid - 1] + sortedValues[mid]) / 2 
+    return sortedValues.length % 2 === 0
+      ? (sortedValues[mid - 1] + sortedValues[mid]) / 2
       : sortedValues[mid];
   };
 
@@ -133,7 +134,7 @@ function CSVVisualization({
     if (anatomyHighlightMode !== "none") {
       let anatomicalValue = 0;
       let isAboveMedian = false;
-      
+
       switch (anatomyHighlightMode) {
         case "anterior":
         case "posterior":
@@ -155,7 +156,7 @@ function CSVVisualization({
           isAboveMedian = anatomicalValue >= anatomyMedian;
           break;
       }
-      
+
       // Determine if this point should be highlighted
       let shouldHighlight = false;
       switch (anatomyHighlightMode) {
@@ -173,7 +174,7 @@ function CSVVisualization({
           shouldHighlight = !isAboveMedian; // Default to below median
           break;
       }
-      
+
       if (shouldHighlight) {
         // Highlighted points - use bright colors based on cell state
         switch (fucciClass) {
@@ -193,7 +194,7 @@ function CSVVisualization({
         return new THREE.Color().setHSL(0, 0, 0.3);
       }
     }
-    
+
     // Original color logic for non-anatomy highlighting modes
     switch (mode) {
       case "intensity":
@@ -229,6 +230,7 @@ function CSVVisualization({
           anatomyHighlightMode={anatomyHighlightMode}
           anatomyMedian={anatomyMedian}
           selectedSomiteIds={selectedSomiteIds}
+          selectedSomiteStages={selectedSomiteStages}
         />
       </group>
     );
