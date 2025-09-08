@@ -21,8 +21,6 @@ import {
 import {
   filterDataByCellState,
   filterDataByAnatomyScore,
-  filterDataBySomiteId,
-  filterDataBySomiteStage,
   clearPercentileCache,
 } from "../utils/dataFilter";
 
