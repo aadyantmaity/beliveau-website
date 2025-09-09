@@ -12,7 +12,7 @@ import AnatomyScoreFilterSection from "./sidebar/AnatomyScoreFilterSection";
 import PCFilterSection from "./sidebar/PCFilterSection";
 import SomiteIdFilterSection from "./sidebar/SomiteIdFilterSection";
 import SomiteStageFilterSection from "./sidebar/SomiteStageFilterSection";
-import InfoSection from "./sidebar/InfoSection";
+// import InfoSection from "./sidebar/InfoSection";
 
 // Import utilities
 import {
@@ -22,7 +22,6 @@ import {
 import {
   filterDataByCellState,
   filterDataByAnatomyScore,
-  filterDataByPC,
   markPCFilteredPoints,
   clearPercentileCache,
 } from "../utils/dataFilter";
@@ -31,7 +30,7 @@ import {
 function SampledFiltersVisualizer({ sampleSize = 5000 }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filtering, setFiltering] = useState(false);
+  const [setFiltering] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [tooltipInfo, setTooltipInfo] = useState({
     show: false,
@@ -169,6 +168,7 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
     anatomyScorePercentiles,
     pcFilters,
     selectedSomiteIds,
+    setFiltering,
   ]);
 
   if (loading) {
