@@ -9,6 +9,7 @@ import CSVVisualization from "./visualization/CSVVisualization";
 import SidebarHeader from "./sidebar/SidebarHeader";
 import CellStateFilterSection from "./sidebar/CellStateFilterSection";
 import AnatomyScoreFilterSection from "./sidebar/AnatomyScoreFilterSection";
+import PCFilterSection from "./sidebar/PCFilterSection";
 import SomiteIdFilterSection from "./sidebar/SomiteIdFilterSection";
 import SomiteStageFilterSection from "./sidebar/SomiteStageFilterSection";
 import InfoSection from "./sidebar/InfoSection";
@@ -21,6 +22,8 @@ import {
 import {
   filterDataByCellState,
   filterDataByAnatomyScore,
+  filterDataByPC,
+  markPCFilteredPoints,
   clearPercentileCache,
 } from "../utils/dataFilter";
 
@@ -54,6 +57,9 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
 
   // Somite stage filter state
   const [selectedSomiteStages, setSelectedSomiteStages] = useState([]);
+
+  // PC filter state
+  const [pcFilters, setPCFilters] = useState({});
 
   // Color mode state
   const [colorMode] = useState("cellState");
@@ -107,7 +113,13 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
 
     // Skip all filtering if no filters are applied (excluding somite IDs and somite stages which are used for coloring)
     const hasActiveFilters =
-      selectedCellStates.length > 0 || selectedAnatomyScores.length > 0;
+      selectedCellStates.length > 0 ||
+      selectedAnatomyScores.length > 0 ||
+      Object.keys(pcFilters).length > 0;
+
+    console.log("Filter check - hasActiveFilters:", hasActiveFilters);
+    console.log("PC filters state:", pcFilters);
+    console.log("PC filters keys:", Object.keys(pcFilters));
 
     if (!hasActiveFilters) {
       setFilteredData(data); // Use original data directly
@@ -136,6 +148,12 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
         );
       }
 
+      // Apply PC filter marking instead of filtering
+      if (Object.keys(pcFilters).length > 0) {
+        console.log("Applying PC filter marking in main component");
+        filtered = markPCFilteredPoints(filtered, pcFilters);
+      }
+
       // Note: Somite ID and Somite Stage filtering are now handled in visualization coloring, not data filtering
 
       setFilteredData(filtered);
@@ -149,6 +167,7 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
     selectedCellStates,
     selectedAnatomyScores,
     anatomyScorePercentiles,
+    pcFilters,
     selectedSomiteIds,
   ]);
 
@@ -271,6 +290,14 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
               hideTooltip={hideTooltip}
             />
 
+            <PCFilterSection
+              pcFilters={pcFilters}
+              setPCFilters={setPCFilters}
+              sidebarCollapsed={sidebarCollapsed}
+              showTooltip={showTooltip}
+              hideTooltip={hideTooltip}
+            />
+
             <SomiteIdFilterSection
               selectedSomiteIds={selectedSomiteIds}
               setSelectedSomiteIds={setSelectedSomiteIds}
@@ -289,7 +316,7 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
               hideTooltip={hideTooltip}
             />
 
-            <InfoSection
+            {/* <InfoSection
               datasetName={`${(sampleSize / 1000).toFixed(0)}K Dataset`}
               filteredData={filteredData}
               data={data}
@@ -298,7 +325,7 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
               selectedCosines={[]}
               sidebarCollapsed={sidebarCollapsed}
               filtering={filtering}
-            />
+            /> */}
           </div>
         )}
       </div>

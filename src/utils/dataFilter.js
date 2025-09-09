@@ -92,6 +92,54 @@ export const filterDataBySomiteStage = (data, selectedSomiteStages) => {
   });
 };
 
+// Filter data by PC values with range filters
+export const filterDataByPC = (data, pcFilters) => {
+  if (!pcFilters || Object.keys(pcFilters).length === 0) {
+    return data;
+  }
+
+  const filterKeys = Object.keys(pcFilters);
+
+  return data.filter((point) => {
+    for (let i = 0; i < filterKeys.length; i++) {
+      const pc = filterKeys[i];
+      const { min, max } = pcFilters[pc];
+      const pcValue = point[pc];
+
+      if (pcValue == null || pcValue < min || pcValue > max) {
+        return false;
+      }
+    }
+    return true;
+  });
+};
+
+// Mark points as PC-filtered instead of removing them
+export const markPCFilteredPoints = (data, pcFilters) => {
+  if (!pcFilters || Object.keys(pcFilters).length === 0) {
+    return data.map((point) => ({ ...point, pcFiltered: false }));
+  }
+
+  const filterKeys = Object.keys(pcFilters);
+
+  return data.map((point) => {
+    let isPCFiltered = false;
+
+    for (let i = 0; i < filterKeys.length; i++) {
+      const pc = filterKeys[i];
+      const { min, max } = pcFilters[pc];
+      const pcValue = point[pc];
+
+      if (pcValue == null || pcValue < min || pcValue > max) {
+        isPCFiltered = true;
+        break;
+      }
+    }
+
+    return { ...point, pcFiltered: isPCFiltered };
+  });
+};
+
 // Clear cache when data changes significantly
 export const clearPercentileCache = () => {
   percentileCache.clear();

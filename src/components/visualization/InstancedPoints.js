@@ -46,6 +46,13 @@ function InstancedPoints({
       const somiteId = point.Somite_ID;
       const somiteStage = point.somite_stage;
 
+      // Check if point is PC-filtered - if so, make it black
+      if (point.pcFiltered) {
+        color.setHSL(0, 0, 0.2); // Black for PC-filtered points
+        colorsArray[i] = color;
+        continue;
+      }
+
       // Check if this point's somite is selected
       const isSomiteSelected =
         selectedSomiteIds.length === 0 || selectedSomiteIds.includes(somiteId);
@@ -113,14 +120,14 @@ function InstancedPoints({
               color.setHSL(0.5, 1.0, 0.7); // Bright Yellow
               break;
             case "FUCCI-Negative":
-              color.setHSL(0.6, 0.8, 0.7); // Bright Blue
+              color.setHSL(0.6, 0.8, 0.7); // Blue
               break;
             default:
-              color.setHSL(0.6, 0.8, 0.7); // Bright Blue
+              color.setHSL(0.6, 0.8, 0.7); // Blue
           }
         } else {
           // Non-highlighted points - gray
-          color.setHSL(0, 0, 0.3);
+          color.setHSL(0, 0, 0.2);
         }
       } else if (selectedSomiteIds.length > 0) {
         // Somite highlighting mode - color selected somites, gray out others
@@ -137,14 +144,14 @@ function InstancedPoints({
               color.setHSL(0.5, 1.0, 0.7); // Bright Yellow
               break;
             case "FUCCI-Negative":
-              color.setHSL(0.6, 0.8, 0.7); // Bright Blue
+              color.setHSL(0.6, 0.8, 0.7); // Blue
               break;
             default:
-              color.setHSL(0.6, 0.8, 0.7); // Bright Blue
+              color.setHSL(0.6, 0.8, 0.7); // Blue
           }
         } else {
           // Non-selected somite points - gray
-          color.setHSL(0, 0, 0.3);
+          color.setHSL(0, 0, 0.2);
         }
       } else if (selectedSomiteStages.length > 0) {
         // Somite stage highlighting mode - color selected stages, gray out others
@@ -161,14 +168,14 @@ function InstancedPoints({
               color.setHSL(0.5, 1.0, 0.7); // Bright Yellow
               break;
             case "FUCCI-Negative":
-              color.setHSL(0.6, 0.8, 0.7); // Bright Blue
+              color.setHSL(0.6, 0.8, 0.7); // Blue
               break;
             default:
-              color.setHSL(0.6, 0.8, 0.7); // Bright Blue
+              color.setHSL(0.6, 0.8, 0.7); // Blue
           }
         } else {
           // Non-selected somite stage points - gray
-          color.setHSL(0, 0, 0.3);
+          color.setHSL(0, 0, 0.2);
         }
       } else if (colorMode === "intensity") {
         color.setHSL(intensity, 0.8, 0.5);
@@ -182,7 +189,7 @@ function InstancedPoints({
             color.setHSL(0.0, 1.0, 0.7); // Brighter Red
             break;
           case "FUCCI-Negative":
-            color.setHSL(0, 0, 0.5); // Gray
+            color.setHSL(0.6, 0.8, 0.7); // Blue
             break;
           default:
             color.setHSL(0, 0, 0.5); // Default gray

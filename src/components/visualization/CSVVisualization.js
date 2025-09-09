@@ -130,6 +130,11 @@ function CSVVisualization({
   }, [data, anatomyHighlightMode]);
 
   const getColor = (intensity, mode, fucciClass, point) => {
+    // Check if point is PC-filtered - if so, make it black
+    if (point.pcFiltered) {
+      return new THREE.Color().setHSL(0, 0, 0.2); // Black for PC-filtered points
+    }
+
     // Handle anatomy highlighting mode
     if (anatomyHighlightMode !== "none") {
       let anatomicalValue = 0;
@@ -191,7 +196,7 @@ function CSVVisualization({
         }
       } else {
         // Non-highlighted points - gray
-        return new THREE.Color().setHSL(0, 0, 0.3);
+        return new THREE.Color().setHSL(0, 0, 0.2);
       }
     }
 
@@ -209,7 +214,7 @@ function CSVVisualization({
           case "FUCCI-Red+":
             return new THREE.Color().setHSL(0.0, 1.0, 0.7); // Brighter Red
           case "FUCCI-Negative":
-            return new THREE.Color().setHSL(0, 0, 0.5); // Gray
+            return new THREE.Color().setHSL(0.6, 0.8, 0.7); // Blue
           default:
             return new THREE.Color().setHSL(0, 0, 0.5); // Default gray
         }
