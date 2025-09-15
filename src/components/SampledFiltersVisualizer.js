@@ -30,7 +30,7 @@ import {
 function SampledFiltersVisualizer({ sampleSize = 5000 }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [setFiltering] = useState(false);
+  const [filtering, setFiltering] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [tooltipInfo, setTooltipInfo] = useState({
     show: false,
