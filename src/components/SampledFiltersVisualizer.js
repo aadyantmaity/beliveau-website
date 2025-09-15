@@ -20,9 +20,9 @@ import {
   sampleData,
 } from "../utils/dataLoader";
 import {
-  filterDataByCellState,
   filterDataByAnatomyScore,
   markPCFilteredPoints,
+  markCellStateSelection,
   clearPercentileCache,
 } from "../utils/dataFilter";
 
@@ -30,7 +30,6 @@ import {
 function SampledFiltersVisualizer({ sampleSize = 5000 }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filtering, setFiltering] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [tooltipInfo, setTooltipInfo] = useState({
     show: false,
@@ -112,7 +111,6 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
 
     // Skip all filtering if no filters are applied (excluding somite IDs and somite stages which are used for coloring)
     const hasActiveFilters =
-      selectedCellStates.length > 0 ||
       selectedAnatomyScores.length > 0 ||
       Object.keys(pcFilters).length > 0;
 
@@ -120,23 +118,12 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
     console.log("PC filters state:", pcFilters);
     console.log("PC filters keys:", Object.keys(pcFilters));
 
-    if (!hasActiveFilters) {
-      setFilteredData(data); // Use original data directly
-      setFiltering(false);
-      return;
-    }
-
-    // Only run filtering if filters are active
-    setFiltering(true);
-
     // Use requestAnimationFrame to prevent blocking the UI
     const filterData = () => {
       let filtered = data;
 
-      // Apply cell state filters
-      if (selectedCellStates.length > 0) {
-        filtered = filterDataByCellState(filtered, selectedCellStates);
-      }
+      // Apply cell state marking instead of filtering
+      filtered = markCellStateSelection(filtered, selectedCellStates);
 
       // Apply anatomy score filters
       if (selectedAnatomyScores.length > 0) {
@@ -156,7 +143,6 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
       // Note: Somite ID and Somite Stage filtering are now handled in visualization coloring, not data filtering
 
       setFilteredData(filtered);
-      setFiltering(false);
     };
 
     // Use requestAnimationFrame to prevent blocking the UI
@@ -168,7 +154,6 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
     anatomyScorePercentiles,
     pcFilters,
     selectedSomiteIds,
-    setFiltering,
   ]);
 
   if (loading) {
@@ -347,6 +332,7 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
           anatomyHighlightMode={anatomyHighlightMode}
           selectedSomiteIds={selectedSomiteIds}
           selectedSomiteStages={selectedSomiteStages}
+          selectedCellStates={selectedCellStates}
         />
 
         <OrbitControls

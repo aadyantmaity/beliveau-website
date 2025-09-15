@@ -14,6 +14,7 @@ function InstancedPoints({
   anatomyMedian,
   selectedSomiteIds = [],
   selectedSomiteStages = [],
+  selectedCellStates = [],
 }) {
   const instancesRef = useRef();
 
@@ -48,7 +49,7 @@ function InstancedPoints({
 
       // Check if point is PC-filtered - if so, make it black
       if (point.pcFiltered) {
-        color.setHSL(0, 0, 0.2); // Black for PC-filtered points
+        color.setHSL(0, 0, 0.5); // Black for PC-filtered points
         colorsArray[i] = color;
         continue;
       }
@@ -107,8 +108,11 @@ function InstancedPoints({
             break;
         }
 
-        if (shouldHighlight) {
-          // Highlighted points - use bright colors based on cell state
+        // Check if this point's cell state is selected (if cell state filtering is active)
+        const isCellStateSelected = point.cellStateSelected;
+
+        if (shouldHighlight && isCellStateSelected) {
+          // Highlighted points with selected cell state - use bright colors based on cell state
           switch (fucciClass) {
             case "FUCCI-Green+":
               color.setHSL(0.33, 1.0, 0.7); // Bright Green
@@ -126,13 +130,15 @@ function InstancedPoints({
               color.setHSL(0.6, 0.8, 0.7); // Blue
           }
         } else {
-          // Non-highlighted points - gray
-          color.setHSL(0, 0, 0.2);
+          // Non-highlighted points or non-selected cell states - gray
+          color.setHSL(0, 0, 0.5);
         }
       } else if (selectedSomiteIds.length > 0) {
         // Somite highlighting mode - color selected somites, gray out others
-        if (isSomiteSelected) {
-          // Selected somite points - use colors based on cell state
+        const isCellStateSelected = point.cellStateSelected;
+        
+        if (isSomiteSelected && isCellStateSelected) {
+          // Selected somite points with selected cell state - use colors based on cell state
           switch (fucciClass) {
             case "FUCCI-Green+":
               color.setHSL(0.33, 1.0, 0.7); // Bright Green
@@ -150,13 +156,15 @@ function InstancedPoints({
               color.setHSL(0.6, 0.8, 0.7); // Blue
           }
         } else {
-          // Non-selected somite points - gray
-          color.setHSL(0, 0, 0.2);
+          // Non-selected somite points or non-selected cell states - gray
+          color.setHSL(0, 0, 0.5);
         }
       } else if (selectedSomiteStages.length > 0) {
         // Somite stage highlighting mode - color selected stages, gray out others
-        if (isSomiteStageSelected) {
-          // Selected somite stage points - use colors based on cell state
+        const isCellStateSelected = point.cellStateSelected;
+        
+        if (isSomiteStageSelected && isCellStateSelected) {
+          // Selected somite stage points with selected cell state - use colors based on cell state
           switch (fucciClass) {
             case "FUCCI-Green+":
               color.setHSL(0.33, 1.0, 0.7); // Bright Green
@@ -174,25 +182,36 @@ function InstancedPoints({
               color.setHSL(0.6, 0.8, 0.7); // Blue
           }
         } else {
-          // Non-selected somite stage points - gray
-          color.setHSL(0, 0, 0.2);
+          // Non-selected somite stage points or non-selected cell states - gray
+          color.setHSL(0, 0, 0.5);
         }
       } else if (colorMode === "intensity") {
         color.setHSL(intensity, 0.8, 0.5);
       } else if (colorMode === "cellState") {
-        // Color based on FUCCI_Class
-        switch (fucciClass) {
-          case "FUCCI-Green+":
-            color.setHSL(0.33, 1.0, 0.7); // Brighter Green
-            break;
-          case "FUCCI-Red+":
-            color.setHSL(0.0, 1.0, 0.7); // Brighter Red
-            break;
-          case "FUCCI-Negative":
-            color.setHSL(0.6, 0.8, 0.7); // Blue
-            break;
-          default:
-            color.setHSL(0, 0, 0.5); // Default gray
+        // Handle cell state selection coloring
+        const isCellStateSelected = point.cellStateSelected;
+        
+        if (!isCellStateSelected) {
+          // Non-selected cells are gray
+          color.setHSL(0, 0, 0.5);
+        } else {
+          // Selected cells get their respective colors
+          switch (fucciClass) {
+            case "FUCCI-Green+":
+              color.setHSL(0.33, 1.0, 0.7); // Bright Green
+              break;
+            case "FUCCI-Red+":
+              color.setHSL(0.0, 1.0, 0.7); // Bright Red
+              break;
+            case "FUCCI-Double+":
+              color.setHSL(0.5, 1.0, 0.7); // Bright Yellow
+              break;
+            case "FUCCI-Negative":
+              color.setHSL(0.6, 0.8, 0.7); // Bright Blue
+              break;
+            default:
+              color.setHSL(0.6, 0.8, 0.7); // Bright Blue
+          }
         }
       } else if (colorMode === "anatomical") {
         // Color based on anatomical value (50% split)

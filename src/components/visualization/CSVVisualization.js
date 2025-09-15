@@ -12,6 +12,7 @@ function CSVVisualization({
   anatomyHighlightMode = "none",
   selectedSomiteIds = [],
   selectedSomiteStages = [],
+  selectedCellStates = [],
 }) {
   const groupRef = useRef();
 
@@ -132,7 +133,32 @@ function CSVVisualization({
   const getColor = (intensity, mode, fucciClass, point) => {
     // Check if point is PC-filtered - if so, make it black
     if (point.pcFiltered) {
-      return new THREE.Color().setHSL(0, 0, 0.2); // Black for PC-filtered points
+      return new THREE.Color().setHSL(0, 0, 0.5); // Black for PC-filtered points
+    }
+
+    // Handle cell state selection coloring
+    if (mode === "cellState") {
+      // Check if this cell state is selected
+      const isCellStateSelected = point.cellStateSelected;
+      
+      if (!isCellStateSelected) {
+        // Non-selected cells are gray
+        return new THREE.Color().setHSL(0, 0, 0.3);
+      }
+      
+      // Selected cells get their respective colors
+      switch (fucciClass) {
+        case "FUCCI-Green+":
+          return new THREE.Color().setHSL(0.33, 1.0, 0.7); // Bright Green
+        case "FUCCI-Red+":
+          return new THREE.Color().setHSL(0.0, 1.0, 0.7); // Bright Red
+        case "FUCCI-Double+":
+          return new THREE.Color().setHSL(0.5, 1.0, 0.7); // Bright Yellow
+        case "FUCCI-Negative":
+          return new THREE.Color().setHSL(0.6, 0.8, 0.7); // Bright Blue
+        default:
+          return new THREE.Color().setHSL(0.6, 0.8, 0.7); // Bright Blue
+      }
     }
 
     // Handle anatomy highlighting mode
@@ -196,7 +222,7 @@ function CSVVisualization({
         }
       } else {
         // Non-highlighted points - gray
-        return new THREE.Color().setHSL(0, 0, 0.2);
+        return new THREE.Color().setHSL(0, 0, 0.5);
       }
     }
 
@@ -206,18 +232,6 @@ function CSVVisualization({
         return new THREE.Color().setHSL(intensity, 0.8, 0.5);
       case "uniform":
         return new THREE.Color().setHSL(0.6, 0.8, 0.7); // Blue color for uniform mode
-      case "cellState":
-        // Color based on FUCCI_Class
-        switch (fucciClass) {
-          case "FUCCI-Green+":
-            return new THREE.Color().setHSL(0.33, 1.0, 0.7); // Brighter Green
-          case "FUCCI-Red+":
-            return new THREE.Color().setHSL(0.0, 1.0, 0.7); // Brighter Red
-          case "FUCCI-Negative":
-            return new THREE.Color().setHSL(0.6, 0.8, 0.7); // Blue
-          default:
-            return new THREE.Color().setHSL(0, 0, 0.5); // Default gray
-        }
       default:
         return new THREE.Color().setHSL(0.6, 0.8, 0.7); // Default blue color
     }
@@ -236,6 +250,7 @@ function CSVVisualization({
           anatomyMedian={anatomyMedian}
           selectedSomiteIds={selectedSomiteIds}
           selectedSomiteStages={selectedSomiteStages}
+          selectedCellStates={selectedCellStates}
         />
       </group>
     );

@@ -31,6 +31,19 @@ export const filterDataByCellState = (data, selectedCellStates) => {
   });
 };
 
+// Mark points based on cell state selection instead of filtering them out
+export const markCellStateSelection = (data, selectedCellStates) => {
+  if (selectedCellStates.length === 0) {
+    // If no cell states are selected, mark all as selected
+    return data.map((point) => ({ ...point, cellStateSelected: true }));
+  }
+
+  return data.map((point) => {
+    const isSelected = selectedCellStates.includes(point.FUCCI_Class);
+    return { ...point, cellStateSelected: isSelected };
+  });
+};
+
 // Filter data by anatomy score values with percentile ranges
 export const filterDataByAnatomyScore = (
   data,
