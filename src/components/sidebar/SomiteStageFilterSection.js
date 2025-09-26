@@ -4,14 +4,14 @@ import ControlSection from "./ControlSection";
 const SomiteStageFilterSection = ({
   selectedSomiteStages,
   setSelectedSomiteStages,
-  selectedSomiteIds,
   sidebarCollapsed,
   showTooltip,
   hideTooltip,
+  disabled = false,
 }) => {
-  // Generate somite stage options (0-21, contiguous values)
+  // Generate somite stage options (1-21, contiguous values)
   const somiteStageOptions = [];
-  for (let i = 0; i <= 21; i++) {
+  for (let i = 1; i <= 21; i++) {
     somiteStageOptions.push({
       id: i,
       name: `Stage ${i}`,
@@ -39,7 +39,6 @@ const SomiteStageFilterSection = ({
   };
 
   const allSelected = selectedSomiteStages.length === somiteStageOptions.length;
-  const isDisabled = selectedSomiteIds.length > 0;
 
   return (
     <ControlSection
@@ -48,9 +47,10 @@ const SomiteStageFilterSection = ({
       sidebarCollapsed={sidebarCollapsed}
       showTooltip={showTooltip}
       hideTooltip={hideTooltip}
+      disabled={disabled}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-        {/* All checkbox and Deselect All button */}
+        {/* Select All checkbox */}
         <div
           style={{
             display: "flex",
@@ -74,68 +74,19 @@ const SomiteStageFilterSection = ({
               type="checkbox"
               checked={allSelected}
               onChange={allSelected ? handleDeselectAll : handleSelectAll}
-              disabled={isDisabled}
               style={{
                 width: "16px",
                 height: "16px",
                 accentColor: "#4CAF50",
-                cursor: isDisabled ? "not-allowed" : "pointer",
-                opacity: isDisabled ? 0.5 : 1,
+                cursor: "pointer",
               }}
             />
             <span style={{ fontWeight: "500" }}>
               {allSelected ? "Deselect All" : "Select All"}
             </span>
           </label>
-
-          {selectedSomiteStages.length > 0 && !isDisabled && (
-            <button
-              onClick={handleDeselectAll}
-              style={{
-                padding: "4px 8px",
-                background: "rgba(255, 255, 255, 0.1)",
-                color: "#ccc",
-                border: "1px solid rgba(255, 255, 255, 0.2)",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "11px",
-                fontWeight: "500",
-                transition: "all 0.15s ease",
-                marginLeft: "8px",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = "rgba(255, 255, 255, 0.15)";
-                e.target.style.borderColor = "rgba(255, 255, 255, 0.3)";
-                e.target.style.color = "white";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = "rgba(255, 255, 255, 0.1)";
-                e.target.style.borderColor = "rgba(255, 255, 255, 0.2)";
-                e.target.style.color = "#ccc";
-              }}
-            >
-              Deselect All
-            </button>
-          )}
         </div>
 
-        {/* Disabled message */}
-        {isDisabled && (
-          <div
-            style={{
-              fontSize: "12px",
-              color: "#666",
-              padding: "8px 12px",
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "6px",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              textAlign: "center",
-              marginBottom: "8px",
-            }}
-          >
-            Disabled - Somite ID filter is active
-          </div>
-        )}
 
         {/* Somite Stage buttons */}
         <div
@@ -156,25 +107,18 @@ const SomiteStageFilterSection = ({
             return (
               <button
                 key={option.id}
-                onClick={() =>
-                  !isDisabled && handleSomiteStageToggle(option.id)
-                }
-                disabled={isDisabled}
+                onClick={() => handleSomiteStageToggle(option.id)}
                 style={{
                   padding: "8px 4px",
-                  background: isDisabled
-                    ? "rgba(255, 255, 255, 0.02)"
-                    : isSelected
+                  background: isSelected
                     ? "rgba(255, 255, 255, 0.2)"
                     : "rgba(255, 255, 255, 0.05)",
-                  color: isDisabled ? "#666" : isSelected ? "white" : "#999",
-                  border: isDisabled
-                    ? "1px solid rgba(255, 255, 255, 0.05)"
-                    : isSelected
+                  color: isSelected ? "white" : "#999",
+                  border: isSelected
                     ? "1px solid rgba(255, 255, 255, 0.3)"
                     : "1px solid rgba(255, 255, 255, 0.1)",
                   borderRadius: "6px",
-                  cursor: isDisabled ? "not-allowed" : "pointer",
+                  cursor: "pointer",
                   fontSize: "12px",
                   fontWeight: isSelected ? "600" : "400",
                   transition: "all 0.15s ease",
@@ -183,10 +127,9 @@ const SomiteStageFilterSection = ({
                   alignItems: "center",
                   justifyContent: "center",
                   textAlign: "center",
-                  opacity: isDisabled ? 0.5 : 1,
                 }}
                 onMouseEnter={(e) => {
-                  if (!isSelected && !isDisabled) {
+                  if (!isSelected) {
                     e.target.style.background = "rgba(255, 255, 255, 0.1)";
                     e.target.style.borderColor = "rgba(255, 255, 255, 0.2)";
                     e.target.style.color = "#ccc";
@@ -194,7 +137,7 @@ const SomiteStageFilterSection = ({
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (!isSelected && !isDisabled) {
+                  if (!isSelected) {
                     e.target.style.background = "rgba(255, 255, 255, 0.05)";
                     e.target.style.borderColor = "rgba(255, 255, 255, 0.1)";
                     e.target.style.color = "#999";
@@ -208,23 +151,41 @@ const SomiteStageFilterSection = ({
           })}
         </div>
 
-        {/* Selection summary */}
-        {selectedSomiteStages.length > 0 && (
-          <div
+
+        {/* Clear Filter Button */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: "8px",
+          }}
+        >
+          <button
+            onClick={handleDeselectAll}
             style={{
-              fontSize: "12px",
-              color: "#ccc",
-              padding: "8px 12px",
-              background: "rgba(255, 255, 255, 0.08)",
+              background: "rgba(255, 255, 255, 0.1)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              color: "white",
+              padding: "8px 16px",
               borderRadius: "6px",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              textAlign: "center",
+              fontSize: "12px",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontWeight: "500",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "rgba(255, 255, 255, 0.2)";
+              e.target.style.borderColor = "rgba(255, 255, 255, 0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "rgba(255, 255, 255, 0.1)";
+              e.target.style.borderColor = "rgba(255, 255, 255, 0.2)";
             }}
           >
-            {selectedSomiteStages.length} stage
-            {selectedSomiteStages.length !== 1 ? "s" : ""} selected
-          </div>
-        )}
+            Clear Filter
+          </button>
+        </div>
       </div>
 
       <style>{`

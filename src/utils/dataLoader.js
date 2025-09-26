@@ -106,6 +106,10 @@ export const loadUpdatedFiltersDataFromFirebase = async (fileName) => {
         PC6_mpId: parseFloat(row.PC6_mpId),
         PC7_mpId: parseFloat(row.PC7_mpId),
         PC8_mpId: parseFloat(row.PC8_mpId),
+        // Pre-computed anatomy colors
+        Dorsal_Ventral_Color: row.Dorsal_Ventral_Color,
+        Left_Right_Color: row.Left_Right_Color,
+        Anterior_Posterior_Color: row.Anterior_Posterior_Color,
       }))
       .filter((row) => !isNaN(row.centroid_x));
     const transformEndTime = performance.now();

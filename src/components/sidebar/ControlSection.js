@@ -9,11 +9,16 @@ export function ControlSection({
   sidebarCollapsed,
   showTooltip,
   hideTooltip,
+  disabled = false,
 }) {
   if (sidebarCollapsed) return null;
 
   return (
-    <div style={{ marginBottom: "20px" }}>
+    <div style={{ 
+      marginBottom: "20px",
+      opacity: disabled ? 0.4 : 1,
+      pointerEvents: disabled ? "none" : "auto"
+    }}>
       <label
         style={{
           display: "flex",
@@ -27,7 +32,8 @@ export function ControlSection({
       >
         {Icon && <Icon size={14} />}
         {title}
-        {tooltip && (
+        {disabled && " (Disabled)"}
+        {tooltip && !disabled && (
           <Question
             size={12}
             style={{ cursor: "pointer", opacity: "0.6" }}

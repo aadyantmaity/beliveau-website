@@ -2,6 +2,35 @@ import React, { useRef, useMemo } from "react";
 import { Instances, Instance } from "@react-three/drei";
 import * as THREE from "three";
 
+
+// Convert hex color to HSL
+const hexToHsl = (hex) => {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+  
+  if (max === min) {
+    h = s = 0;
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+      default: h = 0; break;
+    }
+    h /= 6;
+  }
+  
+  return [h, s, l];
+};
+
+
 // High-performance instanced point component for large datasets
 function InstancedPoints({
   data,
@@ -12,14 +41,13 @@ function InstancedPoints({
   medianValue,
   anatomyHighlightMode,
   anatomyMedian,
-  selectedSomiteIds = [],
   selectedSomiteStages = [],
   selectedCellStates = [],
 }) {
   const instancesRef = useRef();
 
   // Create geometry and material once
-  const geometry = useMemo(() => new THREE.SphereGeometry(0.025, 2, 2), []);
+  const geometry = useMemo(() => new THREE.SphereGeometry(0.075, 2, 2), []);
   const material = useMemo(() => new THREE.MeshStandardMaterial(), []);
 
   // Get anatomical value for coloring
@@ -44,122 +72,23 @@ function InstancedPoints({
       const intensity = data[i].normalizedIntensity;
       const fucciClass = data[i].FUCCI_Class;
       const point = data[i];
-      const somiteId = point.Somite_ID;
       const somiteStage = point.somite_stage;
 
       // Check if point is PC-filtered - if so, make it black
       if (point.pcFiltered) {
-        color.setHSL(0, 0, 0.5); // Black for PC-filtered points
+        color.setHSL(0, 0, 0.2); // Dark gray for PC-filtered points
         colorsArray[i] = color;
         continue;
       }
 
-      // Check if this point's somite is selected
-      const isSomiteSelected =
-        selectedSomiteIds.length === 0 || selectedSomiteIds.includes(somiteId);
 
       // Check if this point's somite stage is selected
       const isSomiteStageSelected =
         selectedSomiteStages.length === 0 ||
         selectedSomiteStages.includes(somiteStage);
 
-      // Handle anatomy highlighting mode
-      if (anatomyHighlightMode && anatomyHighlightMode !== "none") {
-        let anatomicalValue = 0;
-        let isAboveMedian = false;
-
-        switch (anatomyHighlightMode) {
-          case "anterior":
-          case "posterior":
-            anatomicalValue = point.Anterior_Posterior;
-            isAboveMedian = anatomicalValue >= anatomyMedian;
-            break;
-          case "dorsal":
-          case "ventral":
-            anatomicalValue = point.Dorsal_Ventral_Score;
-            isAboveMedian = anatomicalValue >= anatomyMedian;
-            break;
-          case "left":
-          case "right":
-            anatomicalValue = point.Left_Right_Score;
-            isAboveMedian = anatomicalValue >= anatomyMedian;
-            break;
-          default:
-            anatomicalValue = point.Anterior_Posterior;
-            isAboveMedian = anatomicalValue >= anatomyMedian;
-            break;
-        }
-
-        // Determine if this point should be highlighted
-        let shouldHighlight = false;
-        switch (anatomyHighlightMode) {
-          case "anterior":
-          case "dorsal":
-          case "left":
-            shouldHighlight = !isAboveMedian; // Below median
-            break;
-          case "posterior":
-          case "ventral":
-          case "right":
-            shouldHighlight = isAboveMedian; // Above median
-            break;
-          default:
-            shouldHighlight = !isAboveMedian; // Default to below median
-            break;
-        }
-
-        // Check if this point's cell state is selected (if cell state filtering is active)
-        const isCellStateSelected = point.cellStateSelected;
-
-        if (shouldHighlight && isCellStateSelected) {
-          // Highlighted points with selected cell state - use bright colors based on cell state
-          switch (fucciClass) {
-            case "FUCCI-Green+":
-              color.setHSL(0.33, 1.0, 0.7); // Bright Green
-              break;
-            case "FUCCI-Red+":
-              color.setHSL(0.0, 1.0, 0.7); // Bright Red
-              break;
-            case "FUCCI-Double+":
-              color.setHSL(0.5, 1.0, 0.7); // Bright Yellow
-              break;
-            case "FUCCI-Negative":
-              color.setHSL(0.6, 0.8, 0.7); // Blue
-              break;
-            default:
-              color.setHSL(0.6, 0.8, 0.7); // Blue
-          }
-        } else {
-          // Non-highlighted points or non-selected cell states - gray
-          color.setHSL(0, 0, 0.5);
-        }
-      } else if (selectedSomiteIds.length > 0) {
-        // Somite highlighting mode - color selected somites, gray out others
-        const isCellStateSelected = point.cellStateSelected;
-        
-        if (isSomiteSelected && isCellStateSelected) {
-          // Selected somite points with selected cell state - use colors based on cell state
-          switch (fucciClass) {
-            case "FUCCI-Green+":
-              color.setHSL(0.33, 1.0, 0.7); // Bright Green
-              break;
-            case "FUCCI-Red+":
-              color.setHSL(0.0, 1.0, 0.7); // Bright Red
-              break;
-            case "FUCCI-Double+":
-              color.setHSL(0.5, 1.0, 0.7); // Bright Yellow
-              break;
-            case "FUCCI-Negative":
-              color.setHSL(0.6, 0.8, 0.7); // Blue
-              break;
-            default:
-              color.setHSL(0.6, 0.8, 0.7); // Blue
-          }
-        } else {
-          // Non-selected somite points or non-selected cell states - gray
-          color.setHSL(0, 0, 0.5);
-        }
-      } else if (selectedSomiteStages.length > 0) {
+      // Handle somite stage filtering (takes precedence over anatomy)
+      if (selectedSomiteStages.length > 0) {
         // Somite stage highlighting mode - color selected stages, gray out others
         const isCellStateSelected = point.cellStateSelected;
         
@@ -183,7 +112,39 @@ function InstancedPoints({
           }
         } else {
           // Non-selected somite stage points or non-selected cell states - gray
-          color.setHSL(0, 0, 0.5);
+          color.setHSL(0, 0, 0.3);
+        }
+      } else if (anatomyHighlightMode && anatomyHighlightMode !== "none") {
+        // Handle anatomy highlighting mode (only when no somite stage filter is active)
+        const isCellStateSelected = point.cellStateSelected;
+
+        if (isCellStateSelected) {
+          // Use pre-computed anatomy color from the data
+          let anatomyColor = null;
+          switch (anatomyHighlightMode) {
+            case "anterior_posterior":
+              anatomyColor = point.Anterior_Posterior_Color;
+              break;
+            case "dorsal_ventral":
+              anatomyColor = point.Dorsal_Ventral_Color;
+              break;
+            case "left_right":
+              anatomyColor = point.Left_Right_Color;
+              break;
+            default:
+              anatomyColor = point.Anterior_Posterior_Color;
+          }
+          
+          if (anatomyColor) {
+            const [h, s, l] = hexToHsl(anatomyColor);
+            color.setHSL(h, s, l);
+          } else {
+            // Fallback to gray if no pre-computed color
+            color.setHSL(0, 0, 0.3);
+          }
+        } else {
+          // Non-selected cell states - gray
+          color.setHSL(0, 0, 0.3);
         }
       } else if (colorMode === "intensity") {
         color.setHSL(intensity, 0.8, 0.5);
@@ -193,7 +154,7 @@ function InstancedPoints({
         
         if (!isCellStateSelected) {
           // Non-selected cells are gray
-          color.setHSL(0, 0, 0.5);
+          color.setHSL(0, 0, 0.2);
         } else {
           // Selected cells get their respective colors
           switch (fucciClass) {
@@ -235,8 +196,6 @@ function InstancedPoints({
     anatomicalMode,
     medianValue,
     anatomyHighlightMode,
-    anatomyMedian,
-    selectedSomiteIds,
     selectedSomiteStages,
   ]);
 

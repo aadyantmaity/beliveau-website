@@ -3,6 +3,35 @@ import * as THREE from "three";
 import DataPoint from "./DataPoint";
 import InstancedPoints from "./InstancedPoints";
 
+
+// Convert hex color to HSL
+const hexToHsl = (hex) => {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+  
+  if (max === min) {
+    h = s = 0;
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+      default: h = 0; break;
+    }
+    h /= 6;
+  }
+  
+  return [h, s, l];
+};
+
+
 // Main visualization component
 function CSVVisualization({
   data,
@@ -10,7 +39,6 @@ function CSVVisualization({
   performanceMode,
   intensityChannel,
   anatomyHighlightMode = "none",
-  selectedSomiteIds = [],
   selectedSomiteStages = [],
   selectedCellStates = [],
 }) {
@@ -133,7 +161,7 @@ function CSVVisualization({
   const getColor = (intensity, mode, fucciClass, point) => {
     // Check if point is PC-filtered - if so, make it black
     if (point.pcFiltered) {
-      return new THREE.Color().setHSL(0, 0, 0.5); // Black for PC-filtered points
+      return new THREE.Color().setHSL(0, 0, 0.2); // Dark gray for PC-filtered points
     }
 
     // Handle cell state selection coloring
@@ -161,53 +189,14 @@ function CSVVisualization({
       }
     }
 
-    // Handle anatomy highlighting mode
-    if (anatomyHighlightMode !== "none") {
-      let anatomicalValue = 0;
-      let isAboveMedian = false;
-
-      switch (anatomyHighlightMode) {
-        case "anterior":
-        case "posterior":
-          anatomicalValue = point.Anterior_Posterior;
-          isAboveMedian = anatomicalValue >= anatomyMedian;
-          break;
-        case "dorsal":
-        case "ventral":
-          anatomicalValue = point.Dorsal_Ventral_Score;
-          isAboveMedian = anatomicalValue >= anatomyMedian;
-          break;
-        case "left":
-        case "right":
-          anatomicalValue = point.Left_Right_Score;
-          isAboveMedian = anatomicalValue >= anatomyMedian;
-          break;
-        default:
-          anatomicalValue = point.Anterior_Posterior;
-          isAboveMedian = anatomicalValue >= anatomyMedian;
-          break;
-      }
-
-      // Determine if this point should be highlighted
-      let shouldHighlight = false;
-      switch (anatomyHighlightMode) {
-        case "anterior":
-        case "dorsal":
-        case "left":
-          shouldHighlight = !isAboveMedian; // Below median
-          break;
-        case "posterior":
-        case "ventral":
-        case "right":
-          shouldHighlight = isAboveMedian; // Above median
-          break;
-        default:
-          shouldHighlight = !isAboveMedian; // Default to below median
-          break;
-      }
-
-      if (shouldHighlight) {
-        // Highlighted points - use bright colors based on cell state
+    // Handle somite stage filtering (takes precedence over anatomy)
+    if (selectedSomiteStages.length > 0) {
+      // Check if this point's somite stage is selected
+      const isSomiteStageSelected = selectedSomiteStages.includes(point.somite_stage);
+      const isCellStateSelected = point.cellStateSelected;
+      
+      if (isSomiteStageSelected && isCellStateSelected) {
+        // Selected somite stage points with selected cell state - use colors based on cell state
         switch (fucciClass) {
           case "FUCCI-Green+":
             return new THREE.Color().setHSL(0.33, 1.0, 0.7); // Bright Green
@@ -216,13 +205,39 @@ function CSVVisualization({
           case "FUCCI-Double+":
             return new THREE.Color().setHSL(0.5, 1.0, 0.7); // Bright Yellow
           case "FUCCI-Negative":
-            return new THREE.Color().setHSL(0.6, 0.8, 0.7); // Bright Blue
+            return new THREE.Color().setHSL(0.6, 0.8, 0.7); // Blue
           default:
-            return new THREE.Color().setHSL(0.6, 0.8, 0.7); // Bright Blue
+            return new THREE.Color().setHSL(0.6, 0.8, 0.7); // Blue
         }
       } else {
-        // Non-highlighted points - gray
-        return new THREE.Color().setHSL(0, 0, 0.5);
+        // Non-selected somite stage points or non-selected cell states - gray
+        return new THREE.Color().setHSL(0, 0, 0.3);
+      }
+    }
+    // Handle anatomy highlighting mode (only when no somite stage filter is active)
+    else if (anatomyHighlightMode !== "none") {
+      // Use pre-computed anatomy color from the data
+      let anatomyColor = null;
+      switch (anatomyHighlightMode) {
+        case "anterior_posterior":
+          anatomyColor = point.Anterior_Posterior_Color;
+          break;
+        case "dorsal_ventral":
+          anatomyColor = point.Dorsal_Ventral_Color;
+          break;
+        case "left_right":
+          anatomyColor = point.Left_Right_Color;
+          break;
+        default:
+          anatomyColor = point.Anterior_Posterior_Color;
+      }
+      
+      if (anatomyColor) {
+        const [h, s, l] = hexToHsl(anatomyColor);
+        return new THREE.Color().setHSL(h, s, l);
+      } else {
+        // Fallback to gray if no pre-computed color
+        return new THREE.Color().setHSL(0, 0, 0.3);
       }
     }
 
@@ -248,7 +263,6 @@ function CSVVisualization({
           intensityChannel={intensityChannel}
           anatomyHighlightMode={anatomyHighlightMode}
           anatomyMedian={anatomyMedian}
-          selectedSomiteIds={selectedSomiteIds}
           selectedSomiteStages={selectedSomiteStages}
           selectedCellStates={selectedCellStates}
         />

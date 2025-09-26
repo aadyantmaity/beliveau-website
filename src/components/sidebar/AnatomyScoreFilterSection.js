@@ -12,16 +12,14 @@ const AnatomyScoreFilterSection = ({
   sidebarCollapsed,
   showTooltip,
   hideTooltip,
+  disabled = false,
 }) => {
 
   const highlightOptions = [
     { value: "none", label: "Default (No Filter)" },
-    { value: "anterior", label: "Anterior" },
-    { value: "posterior", label: "Posterior" },
-    { value: "dorsal", label: "Dorsal" },
-    { value: "ventral", label: "Ventral" },
-    { value: "left", label: "Left" },
-    { value: "right", label: "Right" },
+    { value: "anterior_posterior", label: "Anterior-Posterior" },
+    { value: "dorsal_ventral", label: "Dorsal-Ventral" },
+    { value: "left_right", label: "Left-Right" },
   ];
 
 
@@ -33,6 +31,7 @@ const AnatomyScoreFilterSection = ({
         sidebarCollapsed={sidebarCollapsed}
         showTooltip={showTooltip}
         hideTooltip={hideTooltip}
+        disabled={disabled}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <CustomDropdown

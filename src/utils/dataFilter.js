@@ -87,14 +87,6 @@ export const filterDataByAnatomyScore = (
   });
 };
 
-// Filter data by somite ID
-export const filterDataBySomiteId = (data, selectedSomiteIds) => {
-  if (selectedSomiteIds.length === 0) return data;
-
-  return data.filter((point) => {
-    return selectedSomiteIds.includes(point.Somite_ID);
-  });
-};
 
 // Filter data by somite stage
 export const filterDataBySomiteStage = (data, selectedSomiteStages) => {
@@ -133,22 +125,18 @@ export const markPCFilteredPoints = (data, pcFilters) => {
     return data.map((point) => ({ ...point, pcFiltered: false }));
   }
 
-  const filterKeys = Object.keys(pcFilters);
+  // Find the active PC filter (only one can be active at a time)
+  const activeFilter = Object.entries(pcFilters).find(([pc, filter]) => filter.active);
+  
+  if (!activeFilter) {
+    return data.map((point) => ({ ...point, pcFiltered: false }));
+  }
+
+  const [activePC, { value }] = activeFilter;
 
   return data.map((point) => {
-    let isPCFiltered = false;
-
-    for (let i = 0; i < filterKeys.length; i++) {
-      const pc = filterKeys[i];
-      const { min, max } = pcFilters[pc];
-      const pcValue = point[pc];
-
-      if (pcValue == null || pcValue < min || pcValue > max) {
-        isPCFiltered = true;
-        break;
-      }
-    }
-
+    const pcValue = point[activePC];
+    const isPCFiltered = pcValue == null || pcValue !== value;
     return { ...point, pcFiltered: isPCFiltered };
   });
 };

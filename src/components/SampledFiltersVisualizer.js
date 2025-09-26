@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, Text } from "@react-three/drei";
 
 // Import visualization components
 import CSVVisualization from "./visualization/CSVVisualization";
@@ -10,7 +10,6 @@ import SidebarHeader from "./sidebar/SidebarHeader";
 import CellStateFilterSection from "./sidebar/CellStateFilterSection";
 import AnatomyScoreFilterSection from "./sidebar/AnatomyScoreFilterSection";
 import PCFilterSection from "./sidebar/PCFilterSection";
-import SomiteIdFilterSection from "./sidebar/SomiteIdFilterSection";
 import SomiteStageFilterSection from "./sidebar/SomiteStageFilterSection";
 // import InfoSection from "./sidebar/InfoSection";
 
@@ -50,8 +49,6 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
   });
   const [anatomyHighlightMode, setAnatomyHighlightMode] = useState("none");
 
-  // Somite ID filter state
-  const [selectedSomiteIds, setSelectedSomiteIds] = useState([]);
 
   // Somite stage filter state
   const [selectedSomiteStages, setSelectedSomiteStages] = useState([]);
@@ -61,6 +58,16 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
 
   // Color mode state
   const [colorMode] = useState("cellState");
+
+  // Determine which filter is currently active
+  const getActiveFilter = () => {
+    if (selectedSomiteStages.length > 0) return "somite";
+    if (anatomyHighlightMode !== "none") return "anatomy";
+    if (Object.values(pcFilters).some(filter => filter.active)) return "pc";
+    return "none";
+  };
+
+  const activeFilter = getActiveFilter();
 
   // Tooltip helper functions
   const showTooltip = (text, event) => {
@@ -80,7 +87,7 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
     try {
       setLoading(true);
       const fullData = await loadUpdatedFiltersDataFromFirebase(
-        "306_data_50.csv"
+        "data_with_anatomy_colors.csv"
       );
 
       // Sample the data based on the sampleSize prop
@@ -153,7 +160,6 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
     selectedAnatomyScores,
     anatomyScorePercentiles,
     pcFilters,
-    selectedSomiteIds,
   ]);
 
   if (loading) {
@@ -255,6 +261,29 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
             }}
             className="sidebar-scroll"
           >
+            {/* Active Filter Display */}
+            {activeFilter !== "none" && (
+              <div
+                style={{
+                  background: "rgba(76, 175, 80, 0.1)",
+                  border: "1px solid rgba(76, 175, 80, 0.3)",
+                  borderRadius: "8px",
+                  padding: "12px",
+                  marginBottom: "16px",
+                  textAlign: "center",
+                }}
+              >
+                <div style={{ fontSize: "12px", color: "#4CAF50", fontWeight: "600", marginBottom: "4px" }}>
+                  Active Filter
+                </div>
+                <div style={{ fontSize: "14px", color: "white", fontWeight: "500" }}>
+                  {activeFilter === "somite" && "Somite Stage"}
+                  {activeFilter === "anatomy" && "Anatomy"}
+                  {activeFilter === "pc" && "Principal Component"}
+                </div>
+              </div>
+            )}
+
             <CellStateFilterSection
               selectedCellStates={selectedCellStates}
               setSelectedCellStates={setSelectedCellStates}
@@ -273,6 +302,7 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
               sidebarCollapsed={sidebarCollapsed}
               showTooltip={showTooltip}
               hideTooltip={hideTooltip}
+              disabled={activeFilter !== "none" && activeFilter !== "anatomy"}
             />
 
             <PCFilterSection
@@ -281,24 +311,17 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
               sidebarCollapsed={sidebarCollapsed}
               showTooltip={showTooltip}
               hideTooltip={hideTooltip}
+              disabled={activeFilter !== "none" && activeFilter !== "pc"}
             />
 
-            <SomiteIdFilterSection
-              selectedSomiteIds={selectedSomiteIds}
-              setSelectedSomiteIds={setSelectedSomiteIds}
-              selectedSomiteStages={selectedSomiteStages}
-              sidebarCollapsed={sidebarCollapsed}
-              showTooltip={showTooltip}
-              hideTooltip={hideTooltip}
-            />
 
             <SomiteStageFilterSection
               selectedSomiteStages={selectedSomiteStages}
               setSelectedSomiteStages={setSelectedSomiteStages}
-              selectedSomiteIds={selectedSomiteIds}
               sidebarCollapsed={sidebarCollapsed}
               showTooltip={showTooltip}
               hideTooltip={hideTooltip}
+              disabled={activeFilter !== "none" && activeFilter !== "somite"}
             />
 
             {/* <InfoSection
@@ -330,7 +353,6 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
           performanceMode="auto"
           intensityChannel="channel_2"
           anatomyHighlightMode={anatomyHighlightMode}
-          selectedSomiteIds={selectedSomiteIds}
           selectedSomiteStages={selectedSomiteStages}
           selectedCellStates={selectedCellStates}
         />
@@ -342,8 +364,37 @@ function SampledFiltersVisualizer({ sampleSize = 5000 }) {
           dampingFactor={0.05}
         />
 
-        {/* Axes */}
-        <axesHelper args={[5]} />
+        {/* Axes - Top Right */}
+        <axesHelper args={[2]} position={[8, 8, 8]} />
+        
+        {/* Axis Labels */}
+        <Text
+          position={[10.5, 8, 8]}
+          fontSize={0.3}
+          color="#ff0000"
+          anchorX="center"
+          anchorY="middle"
+        >
+          X
+        </Text>
+        <Text
+          position={[8, 10.5, 8]}
+          fontSize={0.3}
+          color="#00ff00"
+          anchorX="center"
+          anchorY="middle"
+        >
+          Y
+        </Text>
+        <Text
+          position={[8, 8, 10.5]}
+          fontSize={0.3}
+          color="#0000ff"
+          anchorX="center"
+          anchorY="middle"
+        >
+          Z
+        </Text>
       </Canvas>
     </div>
   );
