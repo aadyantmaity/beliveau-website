@@ -30,6 +30,11 @@ const CellStateFilterSection = ({
       name: "FUCCI Negative",
       description: "Cells not expressing FUCCI markers",
     },
+    {
+      id: "FUCCI-Double+",
+      name: "FUCCI Double",
+      description: "Cells expressing both FUCCI-Green+ and FUCCI-Red+",
+    }
   ];
 
   const handleCellStateSelect = (stateId) => {
@@ -45,7 +50,7 @@ const CellStateFilterSection = ({
   return (
     <ControlSection
       title="Cell State"
-      tooltip="Filter data points based on their FUCCI cell cycle state. FUCCI-Green+ represents G1 phase, FUCCI-Red+ represents S/G2/M phase, and FUCCI-Negative represents cells not expressing FUCCI markers."
+      tooltip="Filter data points based on their FUCCI cell cycle state. FUCCI-Green+ represents G1 phase, FUCCI-Red+ represents S/G2/M phase, FUCCI-Negative represents cells not expressing FUCCI markers, and FUCCI-Double+ represents cells expressing both FUCCI-Green+ and FUCCI-Red+."
       sidebarCollapsed={sidebarCollapsed}
       showTooltip={showTooltip}
       hideTooltip={hideTooltip}

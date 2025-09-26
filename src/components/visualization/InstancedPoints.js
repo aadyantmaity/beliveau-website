@@ -47,7 +47,7 @@ function InstancedPoints({
   const instancesRef = useRef();
 
   // Create geometry and material once
-  const geometry = useMemo(() => new THREE.SphereGeometry(0.075, 2, 2), []);
+  const geometry = useMemo(() => new THREE.SphereGeometry(0.1, 2, 2), []);
   const material = useMemo(() => new THREE.MeshStandardMaterial(), []);
 
   // Get anatomical value for coloring
@@ -112,7 +112,7 @@ function InstancedPoints({
           }
         } else {
           // Non-selected somite stage points or non-selected cell states - gray
-          color.setHSL(0, 0, 0.3);
+          color.setHSL(0, 0, 0.2);
         }
       } else if (anatomyHighlightMode && anatomyHighlightMode !== "none") {
         // Handle anatomy highlighting mode (only when no somite stage filter is active)
